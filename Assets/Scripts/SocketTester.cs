@@ -12,6 +12,8 @@ public class SocketTester : MonoBehaviour
     [SerializeField] private TMP_InputField _messageField;
     [SerializeField] private TextMeshProUGUI _responseField;
 
+    [SerializeField] private bool _dispatch;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Connect()
     {
@@ -54,11 +56,22 @@ public class SocketTester : MonoBehaviour
         _webSocket.Connect();
     }
 
+    void Update()
+    {
+#if !UNITY_WEBGL || UNITY_EDITOR
+        if (_webSocket == null || !_dispatch)
+        {
+            return;
+        }
+        _webSocket.DispatchMessageQueue();
+#endif
+    }
+
     public void SendSocketMessage()
     {
         SendWebSocketMessage();
     }
-    
+
     public async UniTask SendWebSocketMessage()
     {
         if (_webSocket.State == WebSocketState.Open)

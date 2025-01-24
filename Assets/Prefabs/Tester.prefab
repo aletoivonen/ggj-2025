@@ -235,6 +235,7 @@ MonoBehaviour:
   _addressField: {fileID: 3692250046519743385}
   _messageField: {fileID: 3530382433809053525}
   _responseField: {fileID: 3285739829142261072}
+  _dispatch: 1
 --- !u!1 &1040684580061419166
 GameObject:
   m_ObjectHideFlags: 0
