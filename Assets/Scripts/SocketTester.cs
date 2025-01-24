@@ -8,8 +8,8 @@ public class SocketTester : MonoBehaviour
 {
     private WebSocket _webSocket;
 
-    [SerializeField] private InputField _addressField;
-    [SerializeField] private InputField _messageField;
+    [SerializeField] private TMP_InputField _addressField;
+    [SerializeField] private TMP_InputField _messageField;
     [SerializeField] private TextMeshProUGUI _responseField;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -54,6 +54,11 @@ public class SocketTester : MonoBehaviour
         _webSocket.Connect();
     }
 
+    public void SendSocketMessage()
+    {
+        SendWebSocketMessage();
+    }
+    
     public async UniTask SendWebSocketMessage()
     {
         if (_webSocket.State == WebSocketState.Open)
