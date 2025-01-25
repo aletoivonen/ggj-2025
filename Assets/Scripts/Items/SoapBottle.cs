@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Zubble.Items
@@ -8,14 +9,16 @@ namespace Zubble.Items
 
         private void Update()
         {
-            _child.Rotate(new Vector3(0f, 1.0f, 0.5f), Time.deltaTime * 50);
+            Vector3 pos = _child.transform.localPosition;
+            pos.y = Mathf.Sin(Time.time) * 0.3f;
+            _child.transform.localPosition = pos;
         }
 
         private void OnCollisionEnter2D(Collision2D other)
         {
             if (!other.gameObject.CompareTag("Player"))
             {
-                return; 
+                return;
             }
 
             var player = other.gameObject.GetComponent<SocketPlayer>();
