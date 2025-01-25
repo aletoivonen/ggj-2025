@@ -19,11 +19,9 @@ function encodeColor(buffer, color, offset) {
 }
 
 function encodeVector2(buffer, vector, offset) {
-    console.log("offset " + offset);
-    buffer.writeFloatBE(vector.x || 0, offset); // X position (4 bytes)
+    buffer.writeFloatLE(vector.x || 0, offset); // X position (4 bytes)
     offset += 4;
-    console.log("offset " + offset);
-    buffer.writeFloatBE(vector.y || 0, offset); // Y position (4 bytes)
+    buffer.writeFloatLE(vector.y || 0, offset); // Y position (4 bytes)
     return offset + 4;
 }
 
@@ -59,15 +57,17 @@ function encodeSyncMessage(players) {
 
     // Write number of players (4 bytes)
     buffer.writeUInt32LE(playerEntries.length, offset);
+    console.log("sync entries lenght " + playerEntries.length);
     offset += 4;
 
-    // Write player data (13 bytes per player)
+    // Write player data (15 bytes per player)
     playerEntries.forEach((player) => {
         offset = encodePlayerId(buffer, player.id, offset);
         offset = encodeColor(buffer, player.color, offset);
         offset = encodeVector2(buffer, { x: player.x, y: player.y }, offset);
     });
 
+    console.log(buffer.length);
     return buffer;
 }
 
@@ -86,7 +86,8 @@ function encodeInitMessage(playerId, players) {
     offset = encodePlayerId(buffer, playerId, offset);
 
     // Write number of players (4 bytes)
-    buffer.writeUInt32LE(players.length, offset);
+    buffer.writeUInt32LE(playerEntries.length, offset);
+    console.log("init entries lenght " + playerEntries.length);
     offset += 4;
 
     // Write player data (15 bytes per player)

@@ -13,7 +13,7 @@ public static class Decoder
             {
                 Id = BitConverter.ToUInt32(bytes, offset + 4 + i * 15),
                 Color = DecodeColor(bytes, offset + 8 + i * 15),
-                Position = new Vector2(BitConverter.ToSingle(bytes, offset + 11 + i * 16), BitConverter.ToSingle(bytes, offset + 15 + i * 16))
+                Position = new Vector2(BitConverter.ToSingle(bytes, offset + 11 + i * 15), BitConverter.ToSingle(bytes, offset + 15 + i * 15))
             };
         }
         
@@ -37,6 +37,7 @@ public static class Decoder
     
     public static PlayerInitData DecodePlayerInitData(byte[] bytes)
     {
+        Debug.Log("init data " + bytes.Length);
         return new PlayerInitData
         {
             PlayerId = BitConverter.ToUInt32(bytes, 1),
@@ -58,6 +59,7 @@ public static class Decoder
     
     public static PlayerSyncData DecodePlayerSyncData(byte[] bytes)
     {
+        Debug.Log("sync data " + bytes.Length);
         return new PlayerSyncData()
         {
             Players = DecodePlayers(bytes, 1)
