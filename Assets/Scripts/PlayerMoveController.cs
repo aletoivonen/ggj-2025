@@ -12,6 +12,9 @@ public class PlayerMoveController : MonoBehaviour
     public float _groundCheckDistance = 0.1f;
     public LayerMask _groundLayer;
 
+    [Header("Reset Settings")]
+    [SerializeField] private float _resetOffset = 1f;
+
     private Rigidbody2D _rb;
     private Transform _spawn;
     private bool _isGrounded;
@@ -25,11 +28,26 @@ public class PlayerMoveController : MonoBehaviour
     private void OnEnable()
     {
         DeathZone.OnDeathTriggered += OnDeath;
+        SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
+    }
+
+    private void OnSideTriggerEnter(bool isLeftSide)
+    {
+        if (isLeftSide)
+        {
+            transform.position = new Vector2(-transform.position.x - _resetOffset, transform.position.y);
+        }
+        else
+        {
+            transform.position = new Vector2(-transform.position.x + _resetOffset, transform.position.y);
+        }
     }
 
     private void OnDisable()
     {
         DeathZone.OnDeathTriggered -= OnDeath;
+        SideTrigger.OnSideTriggerEnter -= OnSideTriggerEnter;
+
     }
 
     private void OnDeath()
