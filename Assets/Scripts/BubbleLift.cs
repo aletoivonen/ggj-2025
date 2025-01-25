@@ -7,8 +7,15 @@ namespace Zubble
     {
         public int BubbleId;
 
-        private Vector3 _spawnPosition;
-        private float _duration;
+        [SerializeField] private Vector3 _spawnPosition;
+        private float _duration = 2f;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            _spawnPosition = transform.position;
+        }
+#endif
 
         private void Awake()
         {
@@ -20,8 +27,13 @@ namespace Zubble
             PlayerMoveController.OnPlayerDead -= OnPlayerDead;
         }
 
-        private void OnPlayerDead()
+        private void OnPlayerDead(PlayerMoveController player)
         {
+            if (!player.SocketPlayer.IsLocalPlayer)
+            {
+                return;
+            }
+
             gameObject.SetActive(true);
             transform.position = _spawnPosition;
         }
@@ -48,6 +60,7 @@ namespace Zubble
             }
 
             player.RideBubble(_duration);
+            gameObject.SetActive(false);
         }
     }
 }

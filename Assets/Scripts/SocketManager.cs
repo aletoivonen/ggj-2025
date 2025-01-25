@@ -7,6 +7,7 @@ using NativeWebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Unity.VisualScripting;
+using Zubble;
 using ColorUtility = UnityEngine.ColorUtility;
 using Random = UnityEngine.Random;
 
@@ -26,6 +27,23 @@ public class SocketManager : MonoSingleton<SocketManager>
     [SerializeField] private SocketPlayer _playerPrefab;
 
     public Dictionary<int, SocketPlayer> _spawnedPlayers = new();
+
+    protected override void OnAwake()
+    {
+        base.OnAwake();
+
+        PlayerMoveController.OnLocalPlayerBubble += OnLocalPlayerBubble;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerMoveController.OnLocalPlayerBubble -= OnLocalPlayerBubble;
+    }
+
+    private void OnLocalPlayerBubble(float duration)
+    {
+        //TODO send bubble message
+    }
 
     private void Start()
     {
@@ -173,7 +191,7 @@ public class SocketManager : MonoSingleton<SocketManager>
 
         PlayerID = val.ToObject<int>();
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
-        
+
         CheckSpawnedPlayers(json);
 
         SendPlayerProfile();
@@ -201,7 +219,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             // Init not done yet, will duplicate local player
             return;
         }
-        
+
         if (!json.TryGetValue("players", out JToken val))
         {
             Debug.LogError("cant parse players");
