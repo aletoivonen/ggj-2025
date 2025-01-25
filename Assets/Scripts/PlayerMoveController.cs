@@ -14,18 +14,17 @@ public class PlayerMoveController : MonoBehaviour
 
     [Header("Reset Settings")]
     [SerializeField] private float _resetOffset = 1f;
-
     private Rigidbody2D _rb;
     private Transform _spawn;
     private bool _isGrounded;
-
+    private Collider2D _col;
     private SocketPlayer _socketPlayer;
 
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
         _spawn = GameObject.FindWithTag("Spawn").transform;
-
+        _col = GetComponent<Collider2D>();
         _socketPlayer = GetComponent<SocketPlayer>();
     }
 
@@ -92,17 +91,26 @@ public class PlayerMoveController : MonoBehaviour
 
     private bool IsGrounded()
     {
-        // Get the bounds of the collider
-        Collider2D collider = GetComponent<Collider2D>();
-        if (collider == null) return false;
+        bool isNotGoingUp = _rb.linearVelocity.y < 0.1f;
+        if (!isNotGoingUp)
+        {
+            return false;
+        }
 
-        // Raycast down from the bottom of the collider
-        Vector2 origin = new Vector2(collider.bounds.center.x, collider.bounds.min.y); // Bottom center of the collider
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, _groundCheckDistance, _groundLayer);
+        int raycasts = 5;
+        for (int i = 0; i < raycasts; i++)
+        {
+            float x = _col.bounds.min.x + (_col.bounds.size.x / (raycasts - 1)) * i;
+            Vector2 origin = new Vector2(x, _col.bounds.min.y);
+            RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, _groundCheckDistance, _groundLayer);
+            bool hitGround = hit.collider != null;
+            Debug.DrawRay(origin, Vector2.down * _groundCheckDistance, hitGround ? Color.green : Color.red);
+            if (hitGround)
+            {
+                return true;
+            }
+        }
 
-        // Optional: Draw ray in the editor for debugging
-        Debug.DrawRay(origin, Vector2.down * _groundCheckDistance, hit.collider != null ? Color.green : Color.red);
-
-        return hit.collider != null && _rb.linearVelocity.y < 0.1f; // Returns true if the raycast hits the ground
+        return false;
     }
 }
