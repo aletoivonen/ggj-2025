@@ -19,6 +19,7 @@ namespace Zubble.UI
         private void OnSubmit(string arg0)
         {
             _history.text += $"\n{arg0}";
+            _inputField.text = "";
         }
     }
 }
