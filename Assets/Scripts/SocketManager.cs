@@ -29,7 +29,9 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     public Dictionary<int, SocketPlayer> _spawnedPlayers = new();
 
-    public Dictionary<int, BubbleLift> _allBubbles = new();
+    public List<BubbleLift> _allBubbles = new();
+
+    [SerializeField] private int _maxBubbles = 50;
 
     [SerializeField] private BubbleLift _bubbleLiftPrefab;
 
@@ -47,12 +49,17 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     private void OnLocalPlayerBubble(Vector3 pos, float duration)
     {
-        var msg = GetBaseMessage();
-
-        msg["type"] = "bubble";
-        msg["pos"] = "{\"x\":" + pos.x + ", \"y\":" + pos.y + "}";
-
-        _webSocket.SendText(JsonConvert.SerializeObject(msg));
+        SendCreateBubble(new CreateBubbleData()
+        {
+            BubbleId = 0,
+            PlayerId = (uint)PlayerID,
+            Position = pos
+        });
+        
+        SendStartRideBubble(new StartRideBubbleData()
+        {
+            PlayerId = (uint)PlayerID
+        });
     }
 
     private void Start()
@@ -154,10 +161,29 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     private void HandleCreateBubble(CreateBubbleData createBubbleData)
     {
+        if (_allBubbles.Count > _maxBubbles)
+        {
+            var rm = _allBubbles[0];
+            Destroy(rm);
+            _allBubbles.RemoveAt(0);
+        }
+
+        var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position, Quaternion.identity);
+        _allBubbles.Add(bubble);
     }
     
     private void HandlePlayerRideBubble(byte[] bytes)
     {
+        var data = Decoder.DecodeStartRideBubbleData(bytes);
+
+        if (data.PlayerId == PlayerID)
+        {
+            return;
+        }
+
+        var player = _spawnedPlayers.FirstOrDefault(p => p.Value.PlayerId == data.PlayerId);
+        
+        player.Value.GetComponent<PlayerMoveController>().ShowBubble();
     }
 
     private void HandlePlayerMove(byte[] bytes)

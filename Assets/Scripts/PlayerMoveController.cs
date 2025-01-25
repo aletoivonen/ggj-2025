@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Zubble
@@ -35,6 +37,7 @@ namespace Zubble
         private bool _inBubble;
         private float _bubbleTimer;
         [SerializeField] private float _bubbleFloatSpeed;
+        [SerializeField] private float _bubbleDuration = 2;
 
         [SerializeField] private GameObject _bubbleObject;
 
@@ -179,7 +182,7 @@ namespace Zubble
             float vertical = Input.GetAxis("Vertical");
             if (_previousVerticalInput == 0f && vertical > 0)
             {
-                RideBubble(2);
+                RideBubble(_bubbleDuration);
             }
 
             if (Input.GetButtonDown("Jump"))
@@ -275,9 +278,16 @@ namespace Zubble
             OnLocalPlayerBubble?.Invoke(transform.position, duration);
         }
 
-        public void PickUpSoap()
+        public void ShowBubble()
         {
-            Debug.Log("Picked up soap!");
+            StartCoroutine(RemoteBubbleCoroutine());
+        }
+
+        private IEnumerator RemoteBubbleCoroutine()
+        {
+            _bubbleObject.SetActive(true);
+            yield return new WaitForSeconds(_bubbleDuration);
+            _bubbleObject.SetActive(false);
         }
     }
 }
