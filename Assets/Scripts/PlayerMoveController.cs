@@ -147,7 +147,14 @@ namespace Zubble
             if (_isGrounded)
             {
                 _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce);
+                if (_isSpring)
+                {
+                    _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
+                    _isSpring = false;
+                }
             }
+
+            _previousVerticalInput = vertical;
         }
 
         private bool IsGrounded()
