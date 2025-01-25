@@ -484,7 +484,7 @@ MonoBehaviour:
   _requireBubbleSegments:
   - {fileID: 5574967865301657905, guid: 6e3f4cab78353c5458c3db53d03e85b8, type: 3}
   _segmentSpacing: 1
-  _segmentCount: 30
+  _segmentCount: 50
 --- !u!1001 &4154760121858845390
 PrefabInstance:
   m_ObjectHideFlags: 0
