@@ -6,10 +6,3 @@ TextScriptImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 151055
-  packageName: Platformer Microgame
-  packageVersion: 4.0
-  assetPath: Assets/TextMesh Pro/Resources/LineBreaking Leading Characters.txt
-  uploadId: 683079
