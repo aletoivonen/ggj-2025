@@ -132,7 +132,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             return;
         }
 
-        SyncPos pos = p.ToObject<SyncPos>();
+        SyncPos pos = JsonConvert.DeserializeObject<SyncPos>(p.ToString());
 
         sp.transform.position = new Vector2(pos.x, pos.y);
     }
