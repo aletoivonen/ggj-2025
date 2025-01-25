@@ -23,6 +23,7 @@ public class SocketManager : MonoSingleton<SocketManager>
     [SerializeField] private bool _autoConnect = true;
     [SerializeField] private float _syncInterval = 0.3f;
     private float _timeSinceLastSync = 0.0f;
+    private List<SocketPlayer> _tmpPlayers = new List<SocketPlayer>();
 
     [SerializeField] private SocketPlayer _playerPrefab;
 
@@ -91,19 +92,24 @@ public class SocketManager : MonoSingleton<SocketManager>
         _webSocket.Connect();
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         if (_webSocket == null)
         {
             return;
         }
-
-        _timeSinceLastSync += Time.deltaTime;
-        if (_timeSinceLastSync > _syncInterval)
+        
+        if (PlayerID >= 0)
         {
-            _timeSinceLastSync = 0.0f;
-
             SendPlayerSyncMessage();
+        }
+    }
+
+    void Update()
+    {
+        if (_webSocket == null)
+        {
+            return;
         }
 
 #if !UNITY_WEBGL || UNITY_EDITOR
@@ -113,71 +119,51 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     private void HandleMessage(byte[] bytes)
     {
-        var message = System.Text.Encoding.UTF8.GetString(bytes);
-
-        JObject json = JObject.Parse(message);
-
-        if (!json.TryGetValue("type", out JToken val))
+        MessageType type = Decoder.DecodeMessageType(bytes);
+        switch (type)
         {
-            return;
-        }
-
-        switch (val.ToString())
-        {
-            case "init": HandlePlayerInit(json); break;
-            case "sync": HandleSyncPlayer(json); break;
-            case "exit": HandleExitPlayer(json); break;
-            case "event": HandleGameEvent(json); break;
-            case "move": HandlePlayerMove(json); break;
-            case "bubble": HandleBubble(json); break;
-        }
-    }
-
-    private void HandleBubble(JObject json)
-    {
-        if (!json.TryGetValue("player", out JToken val))
-        {
-            Debug.LogError("no player id");
-            return;
-        }
-
-        if (json.TryGetValue("bubbles", out JToken bval))
-        {
-            Debug.LogError("No bubbles");
-        }
-
-        int playerId = val.ToObject<int>();
-        Dictionary<int, SyncPos> bubbles = JsonConvert.DeserializeObject<Dictionary<int, SyncPos>>(bval.ToString());
-
-        foreach (var kvp in bubbles)
-        {
-            if (!_allBubbles.ContainsKey(kvp.Key))
-            {
-                Vector3 pos = new Vector3(kvp.Value.x, kvp.Value.y, 0);
-                var bubble = Instantiate(_bubbleLiftPrefab, pos, Quaternion.identity);
-                bubble.Initialize(kvp.Key, pos, 2);
-            }
-        }
-
-        foreach (var b in _allBubbles)
-        {
-            if (bubbles.Keys.All(k => k != b.Key))
-            {
-                Destroy(_allBubbles[b.Key].gameObject);
-                _allBubbles.Remove(b.Key);
-            }
+            case MessageType.Init:
+                HandlePlayerInit(bytes);
+                break;
+            case MessageType.Sync:
+                HandleSyncPlayer(bytes);
+                break;
+            case MessageType.Move:
+                HandlePlayerMove(bytes);
+                break;
+            case MessageType.CreateBubble:
+                HandleCreateBubble(Decoder.DecodeCreateBubbleData(bytes));
+                break;
+            case MessageType.RideBubble:
+                HandlePlayerRideBubble(bytes);
+                break;
+            case MessageType.Update: default:
+                throw new ArgumentOutOfRangeException();
         }
     }
-
-    private void HandlePlayerMove(JObject json)
+    
+    private void SendCreateBubble(CreateBubbleData data)
     {
-        if (!json.TryGetValue("player", out JToken val))
-        {
-            Debug.LogError("no player id");
-            return;
-        }
+        _webSocket.Send(Encoder.EncodeCreateBubbleData(data));
+    }
+    
+    private void SendStartRideBubble(StartRideBubbleData data)
+    {
+        _webSocket.Send(Encoder.EncodeStartRideBubble(data));
+    }
 
-        int playerId = val.ToObject<int>();
+    private void HandleCreateBubble(CreateBubbleData createBubbleData)
+    {
+    }
+    
+    private void HandlePlayerRideBubble(byte[] bytes)
+    {
+    }
+
+    private void HandlePlayerMove(byte[] bytes)
+    {
+        PlayerMoveData data = Decoder.DecodePlayerMoveData(bytes);
+        int playerId = (int)data.PlayerId;
 
         if (playerId == SocketPlayer.LocalPlayer.PlayerId)
         {
@@ -189,119 +175,100 @@ public class SocketManager : MonoSingleton<SocketManager>
             Debug.LogError("No spawned player");
             return;
         }
-
-        if (!json.TryGetValue("pos", out JToken p))
-        {
-            Debug.LogError("no pos");
-            return;
-        }
-
-        SyncPos pos = JsonConvert.DeserializeObject<SyncPos>(p.ToString());
-
-        sp.transform.position = new Vector2(pos.x, pos.y);
+        
+        sp.transform.position = data.Position;
     }
 
     private void SendPlayerProfile()
     {
-        JObject msg = GetBaseMessage();
-        msg["type"] = "update";
-        msg["name"] = "Player " + PlayerID;
-
-        Color c = Color.white;
-        c.r = Random.Range(0f, 1f);
-        c.g = Random.Range(0f, 1f);
-        c.b = Random.Range(0f, 1f);
-
-        msg["color"] = ColorUtility.ToHtmlStringRGB(c);
-
-        _webSocket.SendText(JsonConvert.SerializeObject(msg));
+        Color color = Color.white;
+        color.r = Random.Range(0f, 1f);
+        color.g = Random.Range(0f, 1f);
+        color.b = Random.Range(0f, 1f);
+        
+        Debug.Log(PlayerID);
+        
+        _webSocket.Send(Encoder.EncodeUpdateData(new PlayerUpdateData
+        {
+            PlayerId = (uint)PlayerID,
+            Color = color
+        }));
     }
 
     private void SendPlayerSyncMessage()
     {
-        var msg = GetBaseMessage();
-        Vector2 pos = SocketPlayer.LocalPlayer.transform.position;
-        msg["type"] = "move";
-        msg["pos"] = "{\"x\":" + pos.x + ", \"y\":" + pos.y + "}";
-
-        _webSocket.SendText(JsonConvert.SerializeObject(msg));
+        _webSocket.Send(Encoder.EncodeMoveData(new PlayerMoveData
+        {
+            PlayerId = (uint)PlayerID,
+            Position = SocketPlayer.LocalPlayer.transform.position
+        }));
     }
 
-    private void HandlePlayerInit(JObject json)
+    private void HandlePlayerInit(byte[] bytes)
     {
-        if (!json.TryGetValue("playerId", out JToken val))
-        {
-            Debug.LogError("Couldn't ready playerID from init message!");
-            return;
-        }
-
-        PlayerID = val.ToObject<int>();
+        PlayerInitData data = Decoder.DecodePlayerInitData(bytes);
+        PlayerID = (int)data.PlayerId;
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
-
-        CheckSpawnedPlayers(json);
+        CheckSpawnedPlayers(data.Players);
 
         SendPlayerProfile();
     }
 
-    private void HandleGameEvent(JObject json)
+    private void HandleGameEvent(byte[] bytes)
     {
-        Debug.Log("Game event: " + JsonUtility.ToJson(json));
+        Debug.Log("Game event: " + bytes);
     }
 
-    private void HandleExitPlayer(JObject json)
+    private void HandleExitPlayer(byte[] bytes)
     {
-        CheckSpawnedPlayers(json);
+        CheckSpawnedPlayers(Decoder.DecodePlayerSyncData(bytes).Players);
     }
 
-    private void HandleSyncPlayer(JObject json)
+    private void HandleSyncPlayer(byte[] bytes)
     {
-        CheckSpawnedPlayers(json);
+        CheckSpawnedPlayers(Decoder.DecodePlayerSyncData(bytes).Players);
     }
 
-    private void CheckSpawnedPlayers(JObject json)
+    private void CheckSpawnedPlayers(PlayerData[] players)
     {
         if (PlayerID < 0)
         {
             // Init not done yet, will duplicate local player
             return;
         }
-
-        if (!json.TryGetValue("players", out JToken val))
+        
+        foreach (PlayerData player in players)
         {
-            Debug.LogError("cant parse players");
-            return;
-        }
-
-        Dictionary<int, PlayerEntry> players = val.ToObject<Dictionary<int, PlayerEntry>>();
-
-        foreach (var kvp in players)
-        {
-            var player = kvp.Value;
-
-            if (player.id == PlayerID)
+            if ((int)player.Id == PlayerID)
             {
                 // local player
                 continue;
             }
-
-            Debug.Log("Other player found, name" + player.name);
-
-            if (!_spawnedPlayers.ContainsKey(player.id))
+            
+            Debug.Log("Other player found, name" + player.Id);
+            if (!_spawnedPlayers.ContainsKey((int)player.Id))
             {
                 SocketPlayer socketPlayer = Instantiate(_playerPrefab);
-                socketPlayer.PlayerId = player.id;
+                socketPlayer.PlayerId = (int)player.Id;
                 socketPlayer.SetIsLocalPlayer(false);
-                _spawnedPlayers.Add(player.id, socketPlayer);
+                _spawnedPlayers.Add((int)player.Id, socketPlayer);
             }
         }
 
         // remove dc'd players
+        _tmpPlayers.Clear();
         foreach (var kvp in _spawnedPlayers)
         {
-            if (players.All(p => p.Value.id != kvp.Value.PlayerId))
+            if (players.All(p => (int)p.Id != kvp.Value.PlayerId))
             {
-                _spawnedPlayers.Remove(kvp.Key);
+                _tmpPlayers.Add(kvp.Value);
             }
+        }
+        
+        foreach (var player in _tmpPlayers)
+        {
+            _spawnedPlayers.Remove(player.PlayerId);
+            Destroy(player.gameObject);
         }
     }
 

@@ -11,17 +11,29 @@ app.use(express.static(path.join(__dirname, '/public')));
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const encodeInitMessage = require('./encoding/encoder').encodeInitMessage;
+const encodeMoveMessage = require('./encoding/encoder').encodeMoveMessage;
+const encodeSyncMessage = require('./encoding/encoder').encodeSyncMessage;
+const encodeCreateBubbleMessage = require('./encoding/encoder').encodeCreateBubbleMessage;
+const encodeRideBubbleMessage = require('./encoding/encoder').encodeRideBubbleMessage;
+
+const decodePlayerUpdateData = require('./decoding/decoder').decodePlayerUpdateData;
+const decodePlayerMoveData = require('./decoding/decoder').decodePlayerMoveData;
+const decodeMessageType = require('./decoding/decoder').decodeMessageType;
+const decodeCreateBubbleData = require('./decoding/decoder').decodeCreateBubbleData;
+const decodeRideBubbleData = require('./decoding/decoder').decodeRideBubbleData;
+
+
 const state = {
   players: {},
-  playerSockets: {}
+  playerSockets: {},
+    
 };
 
 var nextPlayerId = 0;
 
 // Broadcast function to send data to all connected clients
 function broadcastToAllClients(data, ignorePlayerId = null) {
-  const message = JSON.stringify(data);
-
   var ignoreClient = null;
 
   if (ignorePlayerId != null) {
@@ -30,7 +42,7 @@ function broadcastToAllClients(data, ignorePlayerId = null) {
 
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN && client != ignoreClient) {
-      client.send(message);
+      client.send(data);
     } else if (client == ignoreClient) {
       console.log("ignore this client!")
     }
@@ -50,13 +62,8 @@ wss.on('connection', function (socket) {
   state.players[playerId] = { Id: playerId, timestamp: Date.now() };
   state.playerSockets[playerId] = socket;
   // Notify all players about the updated state
-  broadcastToAllClients({ type: 'sync', players: state.players });
-
-  socket.send(JSON.stringify({
-    type: "init",
-    playerId: playerId,
-    players: state.players
-  }))
+  socket.send(encodeInitMessage(playerId, state.players));
+  broadcastToAllClients(encodeSyncMessage(state.players));
 
   socket.on('message', (message) => handleMessage(message, socket));
   socket.on('close', (code, reason) => handleClose(code, reason, socket));
@@ -64,12 +71,12 @@ wss.on('connection', function (socket) {
 
 function handleMessage(message, socket) {
   try {
-    const data = JSON.parse(message);
-
-    switch (data.type) {
-
+    let data;
+    switch (decodeMessageType(message)) {
       case 'update':
+        data = decodePlayerUpdateData(message);
         console.log(`Player update: ${data.id}`);
+        
         if (state.players[data.id]) {
           // Update the player's data and timestamp
           state.players[data.id] = {
@@ -78,18 +85,36 @@ function handleMessage(message, socket) {
             timestamp: Date.now()
           };
           // Notify all players about the updated state
-          broadcastToAllClients({ type: 'sync', players: state.players }, data.id);
+          broadcastToAllClients(encodeSyncMessage(state.players), data.id);
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }
         break;
 
       case 'move':
+        data = decodePlayerMoveData(message);
         if (state.players[data.id]) {
-          console.log("player " + data.id + " moved to " + data.pos)
-          broadcastToAllClients({ type: 'move', player: data.id, pos: data.pos }, data.id);
+          broadcastToAllClients(encodeMoveMessage(data.id, data.position));
         } else {
           console.warn(`Player ${data.id} not found for update.`);
+        }
+        break;
+
+      case 'create_bubble':
+        data = decodeCreateBubbleData(message);
+        if (state.players[data.playerId]) {
+          broadcastToAllClients(encodeCreateBubbleMessage(data.playerId, data.bubbleId, data.position), data.playerId);
+        } else {
+          console.warn(`Player ${data.playerId} not found for update.`);
+        }
+        break;
+        
+      case 'ride_bubble':
+        data = decodeRideBubbleData(message);
+        if (state.players[data.playerId]) {
+          broadcastToAllClients(encodeRideBubbleMessage(data.playerId, data.bubbleId), data.playerId);
+        } else {
+          console.warn(`Player ${data.playerId} not found for update.`);
         }
         break;
 
@@ -121,7 +146,7 @@ function handleClose(code, reason, connection) {
     connections.splice(index, 1);
   }
 
-  broadcastToAllClients({ type: 'sync', players: state.players });
+  broadcastToAllClients(encodeSyncMessage(state.players), leftId);
 }
 
 function getKeyByValue(object, value) {
