@@ -30,6 +30,7 @@ namespace Zubble.Items
                 return;
             }
 
+            Inventory.Instance.AddSoap(1f);
             Destroy(gameObject);
         }
     }
