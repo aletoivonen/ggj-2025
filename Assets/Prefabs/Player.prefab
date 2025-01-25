@@ -60,11 +60,12 @@ MonoBehaviour:
     m_Bits: 64
   _resetOffset: 0.5
   _bubbleFloatSpeed: 5
+  _bubbleDuration: 2
   _bubbleObject: {fileID: 8221589919479310776}
   _bubbleLiftPrefab: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
     type: 3}
-  _fallThreshold: 6
-  _playerSounds: {fileID: 0}
+  _fallThreshold: 9
+  _playerSounds: {fileID: 3471592020614030722}
 --- !u!212 &6820085686429665596
 SpriteRenderer:
   m_ObjectHideFlags: 0
