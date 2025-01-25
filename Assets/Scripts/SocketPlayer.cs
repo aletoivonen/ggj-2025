@@ -1,11 +1,12 @@
 using System;
 using UnityEngine;
 
-public class TempSocketPlayer : MonoBehaviour
+public class SocketPlayer : MonoBehaviour
 {
-    public static TempSocketPlayer LocalPlayer;
+    public static SocketPlayer LocalPlayer;
     
     public bool IsLocalPlayer;
+    public int PlayerId;
 
     private void Start()
     {

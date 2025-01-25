@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using NativeWebSocket;
@@ -15,9 +16,9 @@ public class SocketManager : MonoSingleton<SocketManager>
     [SerializeField] private float _syncInterval = 0.3f;
     private float _timeSinceLastSync = 0.0f;
 
-    [SerializeField] private GameObject _playerPrefab;
+    [SerializeField] private SocketPlayer _playerPrefab;
 
-    public List<GameObject> _spawnedPlayers = new();
+    public Dictionary<int,SocketPlayer> _spawnedPlayers = new();
 
     [ContextMenu("Connect")]
     public void Connect()
@@ -81,7 +82,40 @@ public class SocketManager : MonoSingleton<SocketManager>
             case "sync": HandleSyncPlayer(json); break;
             case "exit": HandleExitPlayer(json); break;
             case "event": HandleGameEvent(json); break;
+            case "move": HandlePlayerMove(json); break;
         }
+    }
+
+    private void HandlePlayerMove(JObject json)
+    {
+        if (!json.TryGetValue("player", out JToken val))
+        {
+            Debug.LogError("no player id");
+            return;
+        }
+        
+        int playerId = val.ToObject<int>();
+
+        if (playerId == SocketPlayer.LocalPlayer.PlayerId)
+        {
+            return; // don't move local player
+        }
+
+        if (!_spawnedPlayers.TryGetValue(playerId, out var sp))
+        {
+            Debug.LogError("No spawned player");
+            return;
+        }
+        
+        if (!json.TryGetValue("pos", out JToken p))
+        {
+            Debug.LogError("no pos");
+            return;
+        }
+
+        Vector2 pos = p.ToObject<Vector2>();
+
+        sp.transform.position = pos;
     }
 
     private void SendPlayerProfile()
@@ -103,7 +137,7 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void SendPlayerSyncMessage()
     {
         var msg = GetBaseMessage();
-        Vector2 pos = TempSocketPlayer.LocalPlayer.transform.position;
+        Vector2 pos = SocketPlayer.LocalPlayer.transform.position;
         msg["type"] = "move";
         msg["pos"] = "{\"x\":" + pos.x + ", \"y\":" + pos.y + "}";
 
@@ -119,6 +153,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         }
 
         PlayerID = val.ToObject<int>();
+        SocketPlayer.LocalPlayer.PlayerId = PlayerID;
 
         SendPlayerProfile();
     }
@@ -138,7 +173,45 @@ public class SocketManager : MonoSingleton<SocketManager>
         CheckSpawnedPlayers(json);
     }
 
-    private void CheckSpawnedPlayers(JObject json) { }
+    private void CheckSpawnedPlayers(JObject json)
+    {
+        if (!json.TryGetValue("players", out JToken val))
+        {
+            Debug.LogError("cant parse players");
+            return;
+        }
+
+        Dictionary<int, PlayerEntry> players = val.ToObject<Dictionary<int, PlayerEntry>>();
+
+        foreach (var kvp in players)
+        {
+            var player = kvp.Value;
+            
+            if (player.id == PlayerID)
+            {
+                // local player
+                continue;
+            }
+            
+            Debug.Log("Other player found, name" + player.name);
+
+            if (_spawnedPlayers.All(sp => sp.Value.PlayerId != player.id))
+            {
+                SocketPlayer socketPlayer = Instantiate(_playerPrefab);
+                socketPlayer.PlayerId = player.id;
+                _spawnedPlayers.Add(player.id, socketPlayer);
+            }
+        }
+
+        // remove dc'd players
+        foreach (var kvp in _spawnedPlayers)
+        {
+            if (players.All(p => p.Value.id != kvp.Value.PlayerId))
+            {
+                _spawnedPlayers.Remove(kvp.Key);
+            }
+        }
+    }
 
     private JObject GetBaseMessage()
     {
@@ -162,6 +235,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         Debug.LogError("Error in Socket: " + e);
     }
 
+    [System.Serializable]
     private class PlayerEntry
     {
         public int id;
