@@ -119,7 +119,7 @@ Material:
     - _GlossyReflections: 0
     - _IOR: -0.6
     - _LightPow: 11.53
-    - _MaxAlpha: 0.7
+    - _MaxAlpha: 0.37
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005

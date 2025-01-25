@@ -10,6 +10,9 @@ namespace Zubble
         [SerializeField] private Vector3 _spawnPosition;
         private float _duration = 2f;
 
+        private Renderer _rend;
+        private Collider2D _coll;
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
@@ -19,6 +22,9 @@ namespace Zubble
 
         private void Awake()
         {
+            _rend = GetComponent<Renderer>();
+            _coll = GetComponent<Collider2D>();
+
             PlayerMoveController.OnPlayerDead += OnPlayerDead;
         }
 
@@ -34,7 +40,7 @@ namespace Zubble
                 return;
             }
 
-            gameObject.SetActive(true);
+            ToggleEnabled(true);
             transform.position = _spawnPosition;
         }
 
@@ -54,13 +60,19 @@ namespace Zubble
 
             var player = other.GetComponent<PlayerMoveController>();
 
-            if (!player.SocketPlayer.IsLocalPlayer)
+            if (!player.SocketPlayer.IsLocalPlayer || player.InBubble)
             {
                 return;
             }
 
-            player.RideBubble(_duration);
-            gameObject.SetActive(false);
+            player.RideBubble(_duration, true);
+            ToggleEnabled(false);
+        }
+
+        private void ToggleEnabled(bool active)
+        {
+            _rend.enabled = active;
+            _coll.enabled = active;
         }
     }
 }

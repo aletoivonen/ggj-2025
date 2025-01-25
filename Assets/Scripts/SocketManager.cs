@@ -168,7 +168,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             _allBubbles.RemoveAt(0);
         }
 
-        var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position, Quaternion.identity);
+        var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position + Vector2.up, Quaternion.identity);
         _allBubbles.Add(bubble);
     }
     

@@ -4,7 +4,8 @@ Shader "Unlit/SkyboxHLSL"
     {
         _GradientTex ("Gradient", 2D) = "white" {}
         _TimeSpeed ("Time speed", Float) = 10
-        _PosDivider ("Pos Divider", Float) = 10000
+        _PosDivider ("Pos Divider", Float) = 1000010
+        _ColorRamp ("Color ramp", Float) = 1
     }
     SubShader
     {
@@ -39,6 +40,7 @@ Shader "Unlit/SkyboxHLSL"
             float4 _GradientTex_ST;
             float _TimeSpeed;
             float _PosDivider;
+            fixed _ColorRamp;
 
             v2f vert (appdata v)
             {
@@ -58,7 +60,7 @@ Shader "Unlit/SkyboxHLSL"
                 fixed2 uv = fixed2(timeFactor + posFactor, 0);
                 
                 // sample the texture
-                fixed4 col = tex2D(_GradientTex, uv);
+                fixed4 col = tex2D(_GradientTex, uv) * _ColorRamp;
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;

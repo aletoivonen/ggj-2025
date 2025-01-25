@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Zubble
 {
@@ -34,7 +35,7 @@ namespace Zubble
         private bool _isSpring;
         private float _previousVerticalInput;
 
-        private bool _inBubble;
+        public bool InBubble { get; private set; }
         private float _bubbleTimer;
         [SerializeField] private float _bubbleFloatSpeed;
         [SerializeField] private float _bubbleDuration = 2;
@@ -164,14 +165,14 @@ namespace Zubble
 
             _timeSinceJump += Time.deltaTime;
 
-            if (_inBubble)
+            if (InBubble)
             {
                 _rb.linearVelocityY = _bubbleFloatSpeed;
 
                 _bubbleTimer -= Time.deltaTime;
                 if (_bubbleTimer <= 0f)
                 {
-                    _inBubble = false;
+                    InBubble = false;
                     _bubbleObject.SetActive(false);
                 }
 
@@ -252,25 +253,25 @@ namespace Zubble
             return false;
         }
 
-        public void RideBubble(float duration)
+        public void RideBubble(float duration, bool skipCost = false)
         {
             if (!SocketPlayer.IsLocalPlayer)
             {
                 return;
             }
 
-            if (Inventory.Instance.Soap >= 1f)
+            if (Inventory.Instance.Soap >= 1f && !skipCost)
             {
                 Inventory.Instance.RemoveSoap(1f);
                 Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
             }
-            else
+            else if (!skipCost)
             {
                 Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
                 return;
             }
 
-            _inBubble = true;
+            InBubble = true;
             _bubbleTimer = duration;
 
             _bubbleObject.SetActive(true);

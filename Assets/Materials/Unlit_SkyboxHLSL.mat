@@ -24,12 +24,13 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _GradientTex:
-        m_Texture: {fileID: 2800000, guid: aa76172047102c5488bfdbd48557c9a3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 95c1cf0e2f3e47847ba84fd628fad12c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _PosDivider: 300000
+    - _ColorRamp: 0.27
+    - _PosDivider: 600000
     - _TimeSpeed: 1
     m_Colors: []
   m_BuildTextureStacks: []
