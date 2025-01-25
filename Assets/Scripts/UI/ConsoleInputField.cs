@@ -21,5 +21,10 @@ namespace Zubble.UI
             _console.InputLine(arg0);
             _inputField.text = "";
         }
+
+        public void Focus()
+        {
+            _inputField.ActivateInputField();
+        }
     }
 }

@@ -24,6 +24,14 @@ namespace Zubble.UI
                     _inputField.text += "\nConnecting...";
                     _socketManager.Connect();
                     break;
+                case "players": 
+                    _inputField.text += "\nPlayers:";
+                    foreach (var player in _socketManager._spawnedPlayers)
+                    {
+                        var pos = player.Value.transform.position;
+                        _inputField.text += $"\nID={player.Value.PlayerId} x={pos.x} y={pos.y}";
+                    }
+                    break;
                 default:
                     _inputField.text += $"\n{line}";
                     break;
