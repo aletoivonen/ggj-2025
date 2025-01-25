@@ -35,13 +35,6 @@ function decodeVector2(buffer, offset) {
 
 // Function to decode PlayerUpdateData
 function decodePlayerUpdateData(buffer) {
-    const messageType = buffer.readUInt8(0); // Message type at byte 0
-
-    // Check if the message is of type 'Update'
-    if (messageType !== 1) { // Assuming 1 represents 'Update' in MessageType enum
-        throw new Error('Invalid message type');
-    }
-
     // Decode player ID (4 bytes starting at offset 1)
     const playerId = decodePlayerId(buffer, 1);
 
@@ -57,13 +50,6 @@ function decodePlayerUpdateData(buffer) {
 
 // Function to decode PlayerMoveData
 function decodePlayerMoveData(buffer) {
-    const messageType = buffer.readUInt8(0); // Message type at byte 0
-
-    // Check if the message is of type 'Move'
-    if (messageType !== 2) { // Assuming 2 represents 'Move' in MessageType enum
-        throw new Error('Invalid message type');
-    }
-
     // Decode player ID (4 bytes starting at offset 1)
     const playerId = decodePlayerId(buffer, 1);
 

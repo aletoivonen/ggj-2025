@@ -11,8 +11,8 @@ public static class Decoder
         {
             players[i] = new PlayerData
             {
-                Id = BitConverter.ToUInt32(bytes, offset + 4 + i * 16),
-                Color = DecodeColor(bytes, offset + 8 + i * 16),
+                Id = BitConverter.ToUInt32(bytes, offset + 4 + i * 15),
+                Color = DecodeColor(bytes, offset + 8 + i * 15),
                 Position = new Vector2(BitConverter.ToSingle(bytes, offset + 11 + i * 16), BitConverter.ToSingle(bytes, offset + 15 + i * 16))
             };
         }

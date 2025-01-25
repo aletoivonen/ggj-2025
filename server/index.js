@@ -58,7 +58,7 @@ wss.on('connection', function (socket) {
   state.playerSockets[playerId] = socket;
   // Notify all players about the updated state
   broadcastToAllClients(encodeSyncMessage(state.players));
-  socket.send(constructInitMessage(playerId, state.players));
+  socket.send(encodeInitMessage(playerId, state.players));
 
   socket.on('message', (message) => handleMessage(message, socket));
   socket.on('close', (code, reason) => handleClose(code, reason, socket));
@@ -69,8 +69,8 @@ function handleMessage(message, socket) {
     let data;
     switch (decodeMessageType(message)) {
       case 'update':
+        data = decodePlayerUpdateData(message);
         console.log(`Player update: ${data.id}`);
-        data = decodePlayerUpdateData();
         
         if (state.players[data.id]) {
           // Update the player's data and timestamp
@@ -87,9 +87,9 @@ function handleMessage(message, socket) {
         break;
 
       case 'move':
-        data = decodePlayerMoveData();
+        data = decodePlayerMoveData(message);
         if (state.players[data.id]) {
-          console.log("player " + data.id + " moved to " + data.position)
+          console.log("player " + data.id + " moved to " + data.position.y)
           broadcastToAllClients(encodeMoveMessage(data.id, data.position));
         } else {
           console.warn(`Player ${data.id} not found for update.`);
