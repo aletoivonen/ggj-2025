@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Zubble;
 
 public class PlayerMoveController : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class PlayerMoveController : MonoBehaviour
     private bool _isGrounded;
     private Collider2D _col;
     private SocketPlayer _socketPlayer;
+    private bool _isSpring;
 
     void Start()
     {
@@ -32,6 +34,18 @@ public class PlayerMoveController : MonoBehaviour
     {
         DeathZone.OnDeathTriggered += OnDeath;
         SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
+        Spring.OnSpringEnter += OnSpringEnter;
+        Spring.OnSpringExit += OnSpringExit;
+    }
+
+    private void OnSpringExit()
+    {
+        _isSpring = false;
+    }
+
+    private void OnSpringEnter()
+    {
+        _isSpring = true;
     }
 
     private void OnSideTriggerEnter(bool isLeftSide)
@@ -86,6 +100,11 @@ public class PlayerMoveController : MonoBehaviour
         if (_isGrounded)
         {
             _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce);
+            if (_isSpring)
+            {
+                _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
+                _isSpring = false;
+            }
         }
     }
 
