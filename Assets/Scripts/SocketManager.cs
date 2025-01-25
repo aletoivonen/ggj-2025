@@ -173,6 +173,8 @@ public class SocketManager : MonoSingleton<SocketManager>
 
         PlayerID = val.ToObject<int>();
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
+        
+        CheckSpawnedPlayers(json);
 
         SendPlayerProfile();
     }
@@ -220,11 +222,11 @@ public class SocketManager : MonoSingleton<SocketManager>
 
             Debug.Log("Other player found, name" + player.name);
 
-            if (_spawnedPlayers.All(sp => sp.Value.PlayerId != player.id))
+            if (!_spawnedPlayers.ContainsKey(player.id))
             {
                 SocketPlayer socketPlayer = Instantiate(_playerPrefab);
-                socketPlayer.SetIsLocalPlayer(false);
                 socketPlayer.PlayerId = player.id;
+                socketPlayer.SetIsLocalPlayer(false);
                 _spawnedPlayers.Add(player.id, socketPlayer);
             }
         }

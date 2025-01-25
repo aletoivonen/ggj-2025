@@ -7,7 +7,7 @@ public class SocketPlayer : MonoBehaviour
 
     public event Action<bool> OnLocalPlayerChanged;
 
-    public bool IsLocalPlayer { get; private set; }
+    [field: SerializeField] public bool IsLocalPlayer { get; private set; }
     public int PlayerId = -1;
 
     private void Start()

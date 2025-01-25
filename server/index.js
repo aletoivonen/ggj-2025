@@ -54,7 +54,8 @@ wss.on('connection', function (socket) {
 
   socket.send(JSON.stringify({
     type: "init",
-    playerId: playerId
+    playerId: playerId,
+    players: state.players
   }))
 
   socket.on('message', (message) => handleMessage(message, socket));
