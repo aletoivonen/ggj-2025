@@ -28,6 +28,11 @@ public class SocketPlayer : MonoBehaviour
             }
 
             LocalPlayer = this;
+            GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+        }
+        else
+        {
+            GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
         }
 
         IsLocalPlayer = local;

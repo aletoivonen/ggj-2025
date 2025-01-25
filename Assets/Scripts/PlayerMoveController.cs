@@ -19,27 +19,14 @@ public class PlayerMoveController : MonoBehaviour
     private Transform _spawn;
     private bool _isGrounded;
 
-    private bool _isRemotePlayer;
+    private SocketPlayer _socketPlayer;
 
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
         _spawn = GameObject.FindWithTag("Spawn").transform;
 
-        GetComponent<SocketPlayer>().OnLocalPlayerChanged += OnLocalPlayerChanged;
-    }
-
-    private void OnDestroy()
-    {
-        GetComponent<SocketPlayer>().OnLocalPlayerChanged -= OnLocalPlayerChanged;
-    }
-
-    private void OnLocalPlayerChanged(bool isLocal)
-    {
-        _isRemotePlayer = !isLocal;
-
-        _rb.bodyType = _isRemotePlayer ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
-        _rb.linearVelocity = Vector2.zero;
+        _socketPlayer = GetComponent<SocketPlayer>();
     }
 
     private void OnEnable()
@@ -50,7 +37,7 @@ public class PlayerMoveController : MonoBehaviour
 
     private void OnSideTriggerEnter(bool isLeftSide)
     {
-        if (_isRemotePlayer)
+        if (!_socketPlayer.IsLocalPlayer)
         {
             return;
         }
@@ -73,7 +60,7 @@ public class PlayerMoveController : MonoBehaviour
 
     private void OnDeath()
     {
-        if (_isRemotePlayer)
+        if (!_socketPlayer.IsLocalPlayer)
         {
             return;
         }
@@ -84,7 +71,7 @@ public class PlayerMoveController : MonoBehaviour
 
     void Update()
     {
-        if (_isRemotePlayer)
+        if (!_socketPlayer.IsLocalPlayer)
         {
             return;
         }
