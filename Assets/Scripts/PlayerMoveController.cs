@@ -220,6 +220,8 @@ namespace Zubble
 
             _col.enabled = false;
             _rb.linearVelocity = new Vector2(0, _rb.linearVelocityY);
+            
+            _playerSounds.PlayOneShot(SoundManager.Instance.RandomFallSound());
         }
 
         private bool IsGrounded()
