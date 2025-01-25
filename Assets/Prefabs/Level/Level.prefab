@@ -478,7 +478,7 @@ MonoBehaviour:
   - {fileID: 7066736234713695368, guid: 483baa65882f751419212e87c81e5626, type: 3}
   - {fileID: 6974987745498013884, guid: 222fc5f187529d945bcf5ebaa1b185b5, type: 3}
   _segmentSpacing: 1
-  _segmentCount: 10
+  _segmentCount: 20
 --- !u!1001 &4154760121858845390
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -22,6 +22,9 @@ public class PlayerMoveController : MonoBehaviour
     private Collider2D _col;
     
     public SocketPlayer SocketPlayer { get; private set; }
+    
+    private bool _isSpring;
+    private float _previousVerticalInput;
 
     void Start()
     {
@@ -35,6 +38,18 @@ public class PlayerMoveController : MonoBehaviour
     {
         DeathZone.OnDeathTriggered += OnDeath;
         SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
+        Spring.OnSpringEnter += OnSpringEnter;
+        Spring.OnSpringExit += OnSpringExit;
+    }
+
+    private void OnSpringExit()
+    {
+        _isSpring = false;
+    }
+
+    private void OnSpringEnter()
+    {
+        _isSpring = true;
     }
 
     private void OnSideTriggerEnter(bool isLeftSide)
@@ -80,6 +95,21 @@ public class PlayerMoveController : MonoBehaviour
             return;
         }
 
+        // Use soap
+        float vertical = Input.GetAxis("Vertical");
+        if (_previousVerticalInput == 0f && vertical > 0) 
+        {
+            if (Inventory.Instance.Soap >= 1f)
+            {
+                Inventory.Instance.RemoveSoap(1f);
+                Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
+            }
+            else
+            {
+                Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
+            }
+        }
+
         // Handle horizontal movement
         float moveInput = Input.GetAxis("Horizontal");
         _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
@@ -122,5 +152,10 @@ public class PlayerMoveController : MonoBehaviour
     public void RideBubble(float duration)
     {
         throw new NotImplementedException();
+    }
+
+    public void PickUpSoap()
+    {
+        Debug.Log("Picked up soap!");
     }
 }
