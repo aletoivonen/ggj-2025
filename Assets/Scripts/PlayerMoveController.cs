@@ -159,7 +159,7 @@ namespace Zubble
             }
 
             // Handle horizontal movement
-            float moveInput = Input.GetAxis("Horizontal");
+            float moveInput = MultiInput.Instance.GetAxis("Horizontal");
             _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
 
             _timeSinceJump += Time.deltaTime;
@@ -179,15 +179,15 @@ namespace Zubble
             }
 
             // Use soap
-            float vertical = Input.GetAxis("Vertical");
+            float vertical = MultiInput.Instance.GetAxis("Vertical");
             if (_previousVerticalInput == 0f && vertical > 0)
             {
                 RideBubble(_bubbleDuration);
             }
 
-            if (Input.GetButtonDown("Jump"))
+            if (MultiInput.Instance.GetButtonDown("Jump"))
             {
-                _timeSinceJump = 0.0f;
+                _timeSinceJump = 0.0f;  
             }
 
             // Check if the player is grounded
