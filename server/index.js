@@ -14,15 +14,20 @@ const wss = new WebSocket.Server({ server });
 const encodeInitMessage = require('./encoding/encoder').encodeInitMessage;
 const encodeMoveMessage = require('./encoding/encoder').encodeMoveMessage;
 const encodeSyncMessage = require('./encoding/encoder').encodeSyncMessage;
+const encodeCreateBubbleMessage = require('./encoding/encoder').encodeCreateBubbleMessage;
+const encodeRideBubbleMessage = require('./encoding/encoder').encodeRideBubbleMessage;
 
 const decodePlayerUpdateData = require('./decoding/decoder').decodePlayerUpdateData;
 const decodePlayerMoveData = require('./decoding/decoder').decodePlayerMoveData;
 const decodeMessageType = require('./decoding/decoder').decodeMessageType;
+const decodeCreateBubbleData = require('./decoding/decoder').decodeCreateBubbleData;
+const decodeRideBubbleData = require('./decoding/decoder').decodeRideBubbleData;
 
 
 const state = {
   players: {},
-  playerSockets: {}
+  playerSockets: {},
+    
 };
 
 var nextPlayerId = 0;
@@ -90,6 +95,24 @@ function handleMessage(message, socket) {
         data = decodePlayerMoveData(message);
         if (state.players[data.id]) {
           broadcastToAllClients(encodeMoveMessage(data.id, data.position));
+        } else {
+          console.warn(`Player ${data.id} not found for update.`);
+        }
+        break;
+
+      case 'create_bubble':
+        data = decodeCreateBubbleData(message);
+        if (state.players[data.id]) {
+          broadcastToAllClients(encodeCreateBubbleMessage(data.playerId, data.bubbleId, data.position));
+        } else {
+          console.warn(`Player ${data.id} not found for update.`);
+        }
+        break;
+        
+      case 'ride_bubble':
+        data = decodeRideBubbleData(message);
+        if (state.players[data.id]) {
+          broadcastToAllClients(encodeRideBubbleMessage(data.playerId, data.bubbleId));
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }

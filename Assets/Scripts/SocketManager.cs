@@ -29,6 +29,10 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     public Dictionary<int, SocketPlayer> _spawnedPlayers = new();
 
+    public Dictionary<int, BubbleLift> _allBubbles = new();
+
+    [SerializeField] private BubbleLift _bubbleLiftPrefab;
+
     protected override void OnAwake()
     {
         base.OnAwake();
@@ -41,9 +45,14 @@ public class SocketManager : MonoSingleton<SocketManager>
         PlayerMoveController.OnLocalPlayerBubble -= OnLocalPlayerBubble;
     }
 
-    private void OnLocalPlayerBubble(float duration)
+    private void OnLocalPlayerBubble(Vector3 pos, float duration)
     {
-        //TODO send bubble message
+        var msg = GetBaseMessage();
+
+        msg["type"] = "bubble";
+        msg["pos"] = "{\"x\":" + pos.x + ", \"y\":" + pos.y + "}";
+
+        _webSocket.SendText(JsonConvert.SerializeObject(msg));
     }
 
     private void Start()
@@ -122,9 +131,33 @@ public class SocketManager : MonoSingleton<SocketManager>
             case MessageType.Move:
                 HandlePlayerMove(bytes);
                 break;
+            case MessageType.CreateBubble:
+                HandleCreateBubble(Decoder.DecodeCreateBubbleData(bytes));
+                break;
+            case MessageType.RideBubble:
+                HandlePlayerRideBubble(bytes);
+                break;
             case MessageType.Update: default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+    
+    private void SendCreateBubble(CreateBubbleData data)
+    {
+        _webSocket.Send(Encoder.EncodeCreateBubbleData(data));
+    }
+    
+    private void SendStartRideBubble(StartRideBubbleData data)
+    {
+        _webSocket.Send(Encoder.EncodeStartRideBubble(data));
+    }
+
+    private void HandleCreateBubble(CreateBubbleData createBubbleData)
+    {
+    }
+    
+    private void HandlePlayerRideBubble(byte[] bytes)
+    {
     }
 
     private void HandlePlayerMove(byte[] bytes)

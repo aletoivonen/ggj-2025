@@ -56,6 +56,28 @@ public static class Decoder
         };
     }
     
+    public static CreateBubbleData DecodeCreateBubbleData(byte[] bytes)
+    {
+        return new CreateBubbleData()
+        {
+            PlayerId = BitConverter.ToUInt32(bytes, 1),
+            BubbleId = BitConverter.ToUInt32(bytes, 5),
+            Position = new Vector2(
+                BitConverter.ToSingle(bytes, 9),
+                BitConverter.ToSingle(bytes, 13)
+            )
+        };
+    }
+    
+    public static StartRideBubbleData DecodeStartRideBubbleData(byte[] bytes)
+    {
+        return new StartRideBubbleData()
+        {
+            PlayerId = BitConverter.ToUInt32(bytes, 1),
+            BubbleId = BitConverter.ToUInt32(bytes, 5),
+        };
+    }
+    
     public static PlayerSyncData DecodePlayerSyncData(byte[] bytes)
     {
         Debug.Log("sync data " + bytes.Length);

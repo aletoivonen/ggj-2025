@@ -11,6 +11,10 @@ function decodeMessageType(buffer, offset) {
             return "move";
         case 4:
             return "update";
+        case 5:
+            return "create_bubble";
+        case 6:
+            return "ride_bubble";
     }
 }
 
@@ -22,7 +26,7 @@ function decodeColor(buffer, offset) {
 }
 
 // Helper function to decode player ID (4 bytes for uint)
-function decodePlayerId(buffer, offset) {
+function decodeUInt(buffer, offset) {
     return buffer.readUInt32LE(offset); // Assuming little-endian format for uint
 }
 
@@ -36,7 +40,7 @@ function decodeVector2(buffer, offset) {
 // Function to decode PlayerUpdateData
 function decodePlayerUpdateData(buffer) {
     // Decode player ID (4 bytes starting at offset 1)
-    const playerId = decodePlayerId(buffer, 1);
+    const playerId = decodeUInt(buffer, 1);
 
     // Decode color (3 bytes starting at offset 5)
     const color = decodeColor(buffer, 5);
@@ -51,7 +55,7 @@ function decodePlayerUpdateData(buffer) {
 // Function to decode PlayerMoveData
 function decodePlayerMoveData(buffer) {
     // Decode player ID (4 bytes starting at offset 1)
-    const playerId = decodePlayerId(buffer, 1);
+    const playerId = decodeUInt(buffer, 1);
 
     // Decode position (8 bytes for Vector2 starting at offset 5)
     const position = decodeVector2(buffer, 5);
@@ -63,6 +67,40 @@ function decodePlayerMoveData(buffer) {
     };
 }
 
+function decodeCreateBubbleData(buffer) {
+    // Decode player ID (4 bytes starting at offset 1)
+    const playerId = decodeUInt(buffer, 1);
+
+    // Decode bubble ID (4 bytes starting at offset 1)
+    const bubbleId = decodeUInt(buffer, 5);
+
+    // Decode position (8 bytes for Vector2 starting at offset 5)
+    const position = decodeVector2(buffer, 9);
+
+    // Return the decoded data in a structured format
+    return {
+        playerId: playerId,
+        bubbleId: bubbleId,
+        position: position
+    };
+}
+
+function decodeRideBubbleData(buffer) {
+    // Decode player ID (4 bytes starting at offset 1)
+    const playerId = decodeUInt(buffer, 1);
+
+    // Decode bubble ID (4 bytes starting at offset 1)
+    const bubbleId = decodeUInt(buffer, 5);
+
+    // Return the decoded data in a structured format
+    return {
+        playeId: playerId,
+        bubbleId: bubbleId
+    };
+}
+
 exports.decodeMessageType = decodeMessageType;
 exports.decodePlayerUpdateData = decodePlayerUpdateData;
 exports.decodePlayerMoveData = decodePlayerMoveData;
+exports.decodeCreateBubbleData = decodeCreateBubbleData;
+exports.decodeRideBubbleData = decodeRideBubbleData;
