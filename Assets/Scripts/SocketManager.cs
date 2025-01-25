@@ -91,7 +91,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         }
 
         _timeSinceLastSync += Time.deltaTime;
-        if (_timeSinceLastSync > _syncInterval)
+        if (_timeSinceLastSync > _syncInterval && PlayerID >= 0)
         {
             _timeSinceLastSync = 0.0f;
 
