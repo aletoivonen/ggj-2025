@@ -1,6 +1,4 @@
-using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Zubble;
 
 public class PlayerMoveController : MonoBehaviour
@@ -21,6 +19,7 @@ public class PlayerMoveController : MonoBehaviour
     private Collider2D _col;
     private SocketPlayer _socketPlayer;
     private bool _isSpring;
+    private float _previousVerticalInput;
 
     void Start()
     {
@@ -30,7 +29,7 @@ public class PlayerMoveController : MonoBehaviour
         _socketPlayer = GetComponent<SocketPlayer>();
     }
 
-    private void OnEnable()
+    private void OnEnable() 
     {
         DeathZone.OnDeathTriggered += OnDeath;
         SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
@@ -89,6 +88,21 @@ public class PlayerMoveController : MonoBehaviour
             return;
         }
 
+        // Use soap
+        float vertical = Input.GetAxis("Vertical");
+        if (_previousVerticalInput == 0f && vertical > 0) 
+        {
+            if (Inventory.Instance.Soap >= 1f)
+            {
+                Inventory.Instance.RemoveSoap(1f);
+                Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
+            }
+            else
+            {
+                Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
+            }
+        }
+
         // Handle horizontal movement
         float moveInput = Input.GetAxis("Horizontal");
         _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
@@ -106,6 +120,8 @@ public class PlayerMoveController : MonoBehaviour
                 _isSpring = false;
             }
         }
+
+        _previousVerticalInput = vertical;
     }
 
     private bool IsGrounded()
@@ -131,5 +147,10 @@ public class PlayerMoveController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void PickUpSoap()
+    {
+        Debug.Log("Picked up soap!");
     }
 }
