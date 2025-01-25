@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using NativeWebSocket;
 using TMPro;
-using UnityEngine.UI;
 
 public class SocketTester : MonoBehaviour
 {
@@ -23,7 +22,7 @@ public class SocketTester : MonoBehaviour
             _webSocket = null;
         }
 
-        _webSocket = new WebSocket("ws://" + _addressField.text);
+        _webSocket = new WebSocket($"wss://{_addressField.text}");
 
         _webSocket.OnOpen += () =>
         {
