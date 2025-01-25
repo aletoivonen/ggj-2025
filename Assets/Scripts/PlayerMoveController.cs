@@ -6,12 +6,12 @@ namespace Zubble
     public class PlayerMoveController : MonoBehaviour
     {
         public static event Action<PlayerMoveController> OnPlayerDead;
-        
+
         /// <summary>
-        /// Param: duration
+        /// Param: position, duration
         /// </summary>
-        public static event Action<float> OnLocalPlayerBubble;
-    
+        public static event Action<Vector3, float> OnLocalPlayerBubble;
+
         [Header("Movement Settings")]
         public float _moveSpeed = 5f;
         public float _jumpForce = 10f;
@@ -26,17 +26,22 @@ namespace Zubble
         private Transform _spawn;
         private bool _isGrounded;
         private Collider2D _col;
-    
+
         public SocketPlayer SocketPlayer { get; private set; }
-    
+
         private bool _isSpring;
         private float _previousVerticalInput;
 
         private bool _inBubble;
         private float _bubbleTimer;
         [SerializeField] private float _bubbleFloatSpeed;
-        
+
         [SerializeField] private GameObject _bubbleObject;
+
+        [SerializeField] private BubbleLift _bubbleLiftPrefab;
+
+        private float _timeSinceJump = 0.0f;
+        private float _jumpWindow = 0.1f;
 
         void Start()
         {
@@ -96,7 +101,9 @@ namespace Zubble
 
             transform.position = _spawn.position;
             _rb.linearVelocity = Vector2.zero;
-        
+
+            Inventory.Instance.RemoveSoap(Inventory.Instance.Soap);
+
             OnPlayerDead?.Invoke(this);
         }
 
@@ -111,10 +118,12 @@ namespace Zubble
             float moveInput = Input.GetAxis("Horizontal");
             _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
 
+            _timeSinceJump += Time.deltaTime;
+
             if (_inBubble)
             {
                 _rb.linearVelocityY = _bubbleFloatSpeed;
-                
+
                 _bubbleTimer -= Time.deltaTime;
                 if (_bubbleTimer <= 0f)
                 {
@@ -127,31 +136,28 @@ namespace Zubble
 
             // Use soap
             float vertical = Input.GetAxis("Vertical");
-            if (_previousVerticalInput == 0f && vertical > 0) 
+            if (_previousVerticalInput == 0f && vertical > 0)
             {
-                if (Inventory.Instance.Soap >= 1f)
-                {
-                    Inventory.Instance.RemoveSoap(1f);
-                    Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
-                }
-                else
-                {
-                    Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
-                }
+                RideBubble(2);
+            }
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                _timeSinceJump = 0.0f;
             }
 
             // Check if the player is grounded
             _isGrounded = IsGrounded();
 
             // Handle jumping
-            if (_isGrounded)
+            if (_isGrounded && _timeSinceJump < _jumpWindow)
             {
                 _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce);
-                if (_isSpring)
-                {
-                    _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
-                    _isSpring = false;
-                }
+            }
+            else if (_isSpring && _isGrounded)
+            {
+                _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
+                _isSpring = false;
             }
 
             _previousVerticalInput = vertical;
@@ -188,13 +194,24 @@ namespace Zubble
             {
                 return;
             }
+            
+            if (Inventory.Instance.Soap >= 1f)
+            {
+                Inventory.Instance.RemoveSoap(1f);
+                Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
+            }
+            else
+            {
+                Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
+                return;
+            }
 
             _inBubble = true;
             _bubbleTimer = duration;
-            
+
             _bubbleObject.SetActive(true);
-            
-            OnLocalPlayerBubble?.Invoke(duration);
+
+            OnLocalPlayerBubble?.Invoke(transform.position, duration);
         }
 
         public void PickUpSoap()
