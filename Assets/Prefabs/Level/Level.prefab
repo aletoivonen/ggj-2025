@@ -475,6 +475,8 @@ MonoBehaviour:
   _levelSegments:
   - {fileID: 3573109506302402724, guid: 9ee29711d8a31754d921d1aa7a937d7f, type: 3}
   - {fileID: 4343179793643241767, guid: 04a520e770ce4dc4688f59aab7075fa4, type: 3}
+  - {fileID: 7066736234713695368, guid: 483baa65882f751419212e87c81e5626, type: 3}
+  - {fileID: 6974987745498013884, guid: 222fc5f187529d945bcf5ebaa1b185b5, type: 3}
   _segmentSpacing: 1
   _segmentCount: 10
 --- !u!1001 &4154760121858845390

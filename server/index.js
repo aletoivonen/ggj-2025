@@ -83,21 +83,13 @@ function handleMessage(message, socket) {
         }
         break;
 
-        case 'move':
+      case 'move':
         if (state.players[data.id]) {
-          console.log("player moved to " + data.pos)
+          console.log("player " + data.id + " moved to " + data.pos)
           broadcastToAllClients({ type: 'move', player: data.id, pos: data.pos }, data.id);
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }
-        break;
-
-      case 'exit':
-        console.log(`Player exited: ${data.id}`);
-        delete state.players[data.id];
-        delete state.playerSockets[data.id];
-        // Notify all players about the updated state
-        broadcastToAllClients({ type: 'sync', players: state.players });
         break;
 
       default:
@@ -111,11 +103,28 @@ function handleMessage(message, socket) {
 function handleClose(code, reason, connection) {
   console.log(`WebSocket closed with code: ${code}, reason: ${reason}`);
 
+  const leftId = getKeyByValue(state.playerSockets, connection)
+
+  if (leftId != null) {
+    const data = state.players[leftId];
+    console.log(`Player exited: ${data.id}`);
+    delete state.players[data.id];
+    delete state.playerSockets[data.id];
+  } else {
+    console.log("didnt find player who exited")
+  }
+
   var index = connections.indexOf(connection);
   if (index !== -1) {
     // remove the connection from the pool
     connections.splice(index, 1);
   }
+
+  broadcastToAllClients({ type: 'sync', players: state.players });
+}
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(key => object[key] === value);
 }
 
 server.listen(8080, function () {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -5,20 +6,34 @@ using UnityEngine;
 using NativeWebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Unity.VisualScripting;
+using ColorUtility = UnityEngine.ColorUtility;
+using Random = UnityEngine.Random;
 
 public class SocketManager : MonoSingleton<SocketManager>
 {
-    public int PlayerID { get; private set; }
+    public int PlayerID { get; private set; } = -1;
 
+    [SerializeField] private bool _useEditorAddress;
+    [SerializeField] private string _editorAddress;
     [SerializeField] private string _address;
     private WebSocket _webSocket;
 
+    [SerializeField] private bool _autoConnect = true;
     [SerializeField] private float _syncInterval = 0.3f;
     private float _timeSinceLastSync = 0.0f;
 
     [SerializeField] private SocketPlayer _playerPrefab;
 
-    public Dictionary<int,SocketPlayer> _spawnedPlayers = new();
+    public Dictionary<int, SocketPlayer> _spawnedPlayers = new();
+
+    private void Start()
+    {
+        if (_autoConnect)
+        {
+            Connect();
+        }
+    }
 
     [ContextMenu("Connect")]
     public void Connect()
@@ -34,7 +49,11 @@ public class SocketManager : MonoSingleton<SocketManager>
             Debug.LogError("Not ws:// address");
         }
 
+#if UNITY_EDITOR
+        _webSocket = _useEditorAddress ? new WebSocket(_editorAddress) : new WebSocket(_address);
+#else
         _webSocket = new WebSocket(_address);
+#endif
 
         _webSocket.OnOpen += OnOpen;
         _webSocket.OnError += OnError;
@@ -93,7 +112,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             Debug.LogError("no player id");
             return;
         }
-        
+
         int playerId = val.ToObject<int>();
 
         if (playerId == SocketPlayer.LocalPlayer.PlayerId)
@@ -106,7 +125,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             Debug.LogError("No spawned player");
             return;
         }
-        
+
         if (!json.TryGetValue("pos", out JToken p))
         {
             Debug.LogError("no pos");
@@ -175,6 +194,12 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     private void CheckSpawnedPlayers(JObject json)
     {
+        if (PlayerID < 0)
+        {
+            // Init not done yet, will duplicate local player
+            return;
+        }
+        
         if (!json.TryGetValue("players", out JToken val))
         {
             Debug.LogError("cant parse players");
@@ -186,18 +211,19 @@ public class SocketManager : MonoSingleton<SocketManager>
         foreach (var kvp in players)
         {
             var player = kvp.Value;
-            
+
             if (player.id == PlayerID)
             {
                 // local player
                 continue;
             }
-            
+
             Debug.Log("Other player found, name" + player.name);
 
             if (_spawnedPlayers.All(sp => sp.Value.PlayerId != player.id))
             {
                 SocketPlayer socketPlayer = Instantiate(_playerPrefab);
+                socketPlayer.SetIsLocalPlayer(false);
                 socketPlayer.PlayerId = player.id;
                 _spawnedPlayers.Add(player.id, socketPlayer);
             }
@@ -233,6 +259,14 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void OnError(string e)
     {
         Debug.LogError("Error in Socket: " + e);
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (_webSocket != null)
+        {
+            _webSocket.Close();
+        }
     }
 
     [System.Serializable]

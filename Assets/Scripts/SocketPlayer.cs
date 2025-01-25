@@ -4,27 +4,35 @@ using UnityEngine;
 public class SocketPlayer : MonoBehaviour
 {
     public static SocketPlayer LocalPlayer;
-    
-    public bool IsLocalPlayer;
-    public int PlayerId;
+
+    public event Action<bool> OnLocalPlayerChanged;
+
+    public bool IsLocalPlayer { get; private set; }
+    public int PlayerId = -1;
 
     private void Start()
     {
         if (LocalPlayer == null)
         {
-            MakeLocalPlayer();
+            SetIsLocalPlayer(true);
         }
     }
 
-    public void MakeLocalPlayer()
+    public void SetIsLocalPlayer(bool local)
     {
-        if (LocalPlayer != null)
+        if (local)
         {
-            LocalPlayer.IsLocalPlayer = false;
+            if (LocalPlayer != null)
+            {
+                LocalPlayer.IsLocalPlayer = false;
+            }
+
+            LocalPlayer = this;
         }
-        
-        LocalPlayer = this;
-        IsLocalPlayer = true;
+
+        IsLocalPlayer = local;
+
+        OnLocalPlayerChanged?.Invoke(IsLocalPlayer);
     }
 
     private void OnApplicationQuit()
