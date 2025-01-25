@@ -28,6 +28,10 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     public Dictionary<int, SocketPlayer> _spawnedPlayers = new();
 
+    public Dictionary<int, BubbleLift> _allBubbles = new();
+
+    [SerializeField] private BubbleLift _bubbleLiftPrefab;
+
     protected override void OnAwake()
     {
         base.OnAwake();
@@ -40,9 +44,14 @@ public class SocketManager : MonoSingleton<SocketManager>
         PlayerMoveController.OnLocalPlayerBubble -= OnLocalPlayerBubble;
     }
 
-    private void OnLocalPlayerBubble(float duration)
+    private void OnLocalPlayerBubble(Vector3 pos, float duration)
     {
-        //TODO send bubble message
+        var msg = GetBaseMessage();
+
+        msg["type"] = "bubble";
+        msg["pos"] = "{\"x\":" + pos.x + ", \"y\":" + pos.y + "}";
+
+        _webSocket.SendText(JsonConvert.SerializeObject(msg));
     }
 
     private void Start()
@@ -120,6 +129,43 @@ public class SocketManager : MonoSingleton<SocketManager>
             case "exit": HandleExitPlayer(json); break;
             case "event": HandleGameEvent(json); break;
             case "move": HandlePlayerMove(json); break;
+            case "bubble": HandleBubble(json); break;
+        }
+    }
+
+    private void HandleBubble(JObject json)
+    {
+        if (!json.TryGetValue("player", out JToken val))
+        {
+            Debug.LogError("no player id");
+            return;
+        }
+
+        if (json.TryGetValue("bubbles", out JToken bval))
+        {
+            Debug.LogError("No bubbles");
+        }
+
+        int playerId = val.ToObject<int>();
+        Dictionary<int, SyncPos> bubbles = JsonConvert.DeserializeObject<Dictionary<int, SyncPos>>(bval.ToString());
+
+        foreach (var kvp in bubbles)
+        {
+            if (!_allBubbles.ContainsKey(kvp.Key))
+            {
+                Vector3 pos = new Vector3(kvp.Value.x, kvp.Value.y, 0);
+                var bubble = Instantiate(_bubbleLiftPrefab, pos, Quaternion.identity);
+                bubble.Initialize(kvp.Key, pos, 2);
+            }
+        }
+
+        foreach (var b in _allBubbles)
+        {
+            if (bubbles.Keys.All(k => k != b.Key))
+            {
+                Destroy(_allBubbles[b.Key].gameObject);
+                _allBubbles.Remove(b.Key);
+            }
         }
     }
 

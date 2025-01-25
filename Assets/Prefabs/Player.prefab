@@ -61,6 +61,8 @@ MonoBehaviour:
   _resetOffset: 0.5
   _bubbleFloatSpeed: 5
   _bubbleObject: {fileID: 8221589919479310776}
+  _bubbleLiftPrefab: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
+    type: 3}
 --- !u!212 &6820085686429665596
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -353,7 +355,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5337729356923077834
 Transform:
   m_ObjectHideFlags: 0
