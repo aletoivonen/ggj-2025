@@ -4,6 +4,8 @@ using UnityEngine.Serialization;
 
 public class PlayerMoveController : MonoBehaviour
 {
+    public static event Action OnPlayerDead;
+    
     [Header("Movement Settings")]
     public float _moveSpeed = 5f;
     public float _jumpForce = 10f;
@@ -18,14 +20,15 @@ public class PlayerMoveController : MonoBehaviour
     private Transform _spawn;
     private bool _isGrounded;
     private Collider2D _col;
-    private SocketPlayer _socketPlayer;
+    
+    public SocketPlayer SocketPlayer { get; private set; }
 
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
         _spawn = GameObject.FindWithTag("Spawn").transform;
         _col = GetComponent<Collider2D>();
-        _socketPlayer = GetComponent<SocketPlayer>();
+        SocketPlayer = GetComponent<SocketPlayer>();
     }
 
     private void OnEnable()
@@ -36,7 +39,7 @@ public class PlayerMoveController : MonoBehaviour
 
     private void OnSideTriggerEnter(bool isLeftSide)
     {
-        if (!_socketPlayer.IsLocalPlayer)
+        if (!SocketPlayer.IsLocalPlayer)
         {
             return;
         }
@@ -59,18 +62,20 @@ public class PlayerMoveController : MonoBehaviour
 
     private void OnDeath()
     {
-        if (!_socketPlayer.IsLocalPlayer)
+        if (!SocketPlayer.IsLocalPlayer)
         {
             return;
         }
 
         transform.position = _spawn.position;
         _rb.linearVelocity = Vector2.zero;
+        
+        OnPlayerDead?.Invoke();
     }
 
     void Update()
     {
-        if (!_socketPlayer.IsLocalPlayer)
+        if (!SocketPlayer.IsLocalPlayer)
         {
             return;
         }
@@ -112,5 +117,10 @@ public class PlayerMoveController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void RideBubble(float duration)
+    {
+        throw new NotImplementedException();
     }
 }
