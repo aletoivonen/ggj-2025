@@ -55,7 +55,7 @@ MonoBehaviour:
   _groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  _resetOffset: 1
+  _resetOffset: 0.5
 --- !u!212 &6820085686429665596
 SpriteRenderer:
   m_ObjectHideFlags: 0
