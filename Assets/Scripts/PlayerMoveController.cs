@@ -43,6 +43,14 @@ namespace Zubble
         private float _timeSinceJump = 0.0f;
         private float _jumpWindow = 0.1f;
 
+        private float _runBestHeight;
+        private float _personalBest;
+        private float _lastGroundedHeight;
+        private bool _fallingDown;
+        [SerializeField] private float _fallThreshold = 10f;
+
+        [SerializeField] private AudioSource _playerSounds;
+
         void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
@@ -102,6 +110,10 @@ namespace Zubble
             transform.position = _spawn.position;
             _rb.linearVelocity = Vector2.zero;
 
+            _fallingDown = false;
+            _col.enabled = true;
+            _runBestHeight = 0.0f;
+
             Inventory.Instance.RemoveSoap(Inventory.Instance.Soap);
 
             OnPlayerDead?.Invoke(this);
@@ -112,6 +124,35 @@ namespace Zubble
             if (!SocketPlayer.IsLocalPlayer)
             {
                 return;
+            }
+
+            if (transform.position.y < -2)
+            {
+                OnDeath();
+            }
+
+            if (_fallingDown)
+            {
+                if (transform.position.y < 3)
+                {
+                    _col.enabled = true;
+                    _fallingDown = false;
+                    _runBestHeight = 0.0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (transform.position.y > _runBestHeight)
+            {
+                _runBestHeight = transform.position.y;
+            }
+
+            if (_runBestHeight > _personalBest)
+            {
+                _personalBest = _runBestHeight;
             }
 
             // Handle horizontal movement
@@ -149,6 +190,15 @@ namespace Zubble
             // Check if the player is grounded
             _isGrounded = IsGrounded();
 
+            if (_isGrounded)
+            {
+                _lastGroundedHeight = transform.position.y;
+            }
+            else if (_runBestHeight - transform.position.y > _fallThreshold && transform.position.y > 10)
+            {
+                FallDown();
+            }
+
             // Handle jumping
             if (_isGrounded && _timeSinceJump < _jumpWindow)
             {
@@ -161,6 +211,15 @@ namespace Zubble
             }
 
             _previousVerticalInput = vertical;
+        }
+
+        private void FallDown()
+        {
+            Debug.Log("Fall down");
+            _fallingDown = true;
+
+            _col.enabled = false;
+            _rb.linearVelocity = new Vector2(0, _rb.linearVelocityY);
         }
 
         private bool IsGrounded()
@@ -194,7 +253,7 @@ namespace Zubble
             {
                 return;
             }
-            
+
             if (Inventory.Instance.Soap >= 1f)
             {
                 Inventory.Instance.RemoveSoap(1f);
