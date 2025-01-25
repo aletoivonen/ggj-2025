@@ -13,7 +13,7 @@ namespace Zubble
         /// <summary>
         /// Param: position, duration
         /// </summary>
-        public static event Action<Vector3, float> OnLocalPlayerBubble;
+        public static event Action<Vector3, float, bool> OnLocalPlayerBubble;
 
         [Header("Movement Settings")]
         public float _moveSpeed = 5f;
@@ -253,19 +253,19 @@ namespace Zubble
             return false;
         }
 
-        public void RideBubble(float duration, bool skipCost = false)
+        public void RideBubble(float duration, bool existing = false)
         {
             if (!SocketPlayer.IsLocalPlayer)
             {
                 return;
             }
 
-            if (Inventory.Instance.Soap >= 1f && !skipCost)
+            if (Inventory.Instance.Soap >= 1f && !existing)
             {
                 Inventory.Instance.RemoveSoap(1f);
                 Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
             }
-            else if (!skipCost)
+            else if (!existing)
             {
                 Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
                 return;
@@ -276,7 +276,7 @@ namespace Zubble
 
             _bubbleObject.SetActive(true);
 
-            OnLocalPlayerBubble?.Invoke(transform.position, duration);
+            OnLocalPlayerBubble?.Invoke(transform.position, duration, existing);
         }
 
         public void ShowBubble()

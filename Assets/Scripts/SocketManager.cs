@@ -47,19 +47,26 @@ public class SocketManager : MonoSingleton<SocketManager>
         PlayerMoveController.OnLocalPlayerBubble -= OnLocalPlayerBubble;
     }
 
-    private void OnLocalPlayerBubble(Vector3 pos, float duration)
+    private void OnLocalPlayerBubble(Vector3 pos, float duration, bool existing)
     {
-        SendCreateBubble(new CreateBubbleData()
+        if (!existing)
         {
-            BubbleId = 0,
-            PlayerId = (uint)PlayerID,
-            Position = pos
-        });
-        
-        SendStartRideBubble(new StartRideBubbleData()
-        {
-            PlayerId = (uint)PlayerID
-        });
+            SendCreateBubble(
+                new CreateBubbleData()
+                {
+                    BubbleId = 0,
+                    PlayerId = (uint)PlayerID,
+                    Position = pos
+                }
+            );
+        }
+
+        SendStartRideBubble(
+            new StartRideBubbleData()
+            {
+                PlayerId = (uint)PlayerID
+            }
+        );
     }
 
     private void Start()
@@ -105,7 +112,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         {
             return;
         }
-        
+
         if (PlayerID >= 0)
         {
             SendPlayerSyncMessage();
@@ -144,16 +151,17 @@ public class SocketManager : MonoSingleton<SocketManager>
             case MessageType.RideBubble:
                 HandlePlayerRideBubble(bytes);
                 break;
-            case MessageType.Update: default:
+            case MessageType.Update:
+            default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     private void SendCreateBubble(CreateBubbleData data)
     {
         _webSocket.Send(Encoder.EncodeCreateBubbleData(data));
     }
-    
+
     private void SendStartRideBubble(StartRideBubbleData data)
     {
         _webSocket.Send(Encoder.EncodeStartRideBubble(data));
@@ -171,7 +179,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position + Vector2.up * 0.25f, Quaternion.identity);
         _allBubbles.Add(bubble);
     }
-    
+
     private void HandlePlayerRideBubble(byte[] bytes)
     {
         var data = Decoder.DecodeStartRideBubbleData(bytes);
@@ -182,7 +190,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         }
 
         var player = _spawnedPlayers.FirstOrDefault(p => p.Value.PlayerId == data.PlayerId);
-        
+
         player.Value.GetComponent<PlayerMoveController>().ShowBubble();
     }
 
@@ -201,7 +209,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             Debug.LogError("No spawned player");
             return;
         }
-        
+
         sp.transform.position = data.Position;
     }
 
@@ -211,23 +219,31 @@ public class SocketManager : MonoSingleton<SocketManager>
         color.r = Random.Range(0f, 1f);
         color.g = Random.Range(0f, 1f);
         color.b = Random.Range(0f, 1f);
-        
+
         Debug.Log(PlayerID);
-        
-        _webSocket.Send(Encoder.EncodeUpdateData(new PlayerUpdateData
-        {
-            PlayerId = (uint)PlayerID,
-            Color = color
-        }));
+
+        _webSocket.Send(
+            Encoder.EncodeUpdateData(
+                new PlayerUpdateData
+                {
+                    PlayerId = (uint)PlayerID,
+                    Color = color
+                }
+            )
+        );
     }
 
     private void SendPlayerSyncMessage()
     {
-        _webSocket.Send(Encoder.EncodeMoveData(new PlayerMoveData
-        {
-            PlayerId = (uint)PlayerID,
-            Position = SocketPlayer.LocalPlayer.transform.position
-        }));
+        _webSocket.Send(
+            Encoder.EncodeMoveData(
+                new PlayerMoveData
+                {
+                    PlayerId = (uint)PlayerID,
+                    Position = SocketPlayer.LocalPlayer.transform.position
+                }
+            )
+        );
     }
 
     private void HandlePlayerInit(byte[] bytes)
@@ -262,7 +278,7 @@ public class SocketManager : MonoSingleton<SocketManager>
             // Init not done yet, will duplicate local player
             return;
         }
-        
+
         foreach (PlayerData player in players)
         {
             if ((int)player.Id == PlayerID)
@@ -270,7 +286,7 @@ public class SocketManager : MonoSingleton<SocketManager>
                 // local player
                 continue;
             }
-            
+
             Debug.Log("Other player found, name" + player.Id);
             if (!_spawnedPlayers.ContainsKey((int)player.Id))
             {
@@ -290,7 +306,7 @@ public class SocketManager : MonoSingleton<SocketManager>
                 _tmpPlayers.Add(kvp.Value);
             }
         }
-        
+
         foreach (var player in _tmpPlayers)
         {
             _spawnedPlayers.Remove(player.PlayerId);
