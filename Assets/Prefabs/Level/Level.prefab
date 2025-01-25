@@ -480,6 +480,8 @@ MonoBehaviour:
   - {fileID: 5966848823720167852, guid: 975df8b76def337489b410b66c8fffc4, type: 3}
   - {fileID: 2312969954598399349, guid: 16674d23044fd0141a887003d6fce8c9, type: 3}
   - {fileID: 7260950155503186190, guid: 157b9674bb2a34b4da9ef5422aca0aff, type: 3}
+  _requireBubbleSegments:
+  - {fileID: 5574967865301657905, guid: 6e3f4cab78353c5458c3db53d03e85b8, type: 3}
   _segmentSpacing: 1
   _segmentCount: 20
 --- !u!1001 &4154760121858845390
