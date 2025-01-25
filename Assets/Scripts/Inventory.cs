@@ -6,6 +6,7 @@ namespace Zubble
         private static Inventory _inventory;
 
         public float Soap { get; private set; }
+        public float HighScore { get; private set; }
 
         public Inventory()
         {
@@ -24,6 +25,12 @@ namespace Zubble
         public void RemoveSoap(float amount)
         {
             Soap -= amount;
+        }
+
+        /// <summary> New personal best score</summary>
+        public void SetHighScore(float score)
+        {
+            HighScore = score;
         }
     }
 }

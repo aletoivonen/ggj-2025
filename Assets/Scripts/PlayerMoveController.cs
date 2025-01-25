@@ -48,7 +48,6 @@ namespace Zubble
         private float _jumpWindow = 0.1f;
 
         private float _runBestHeight;
-        private float _personalBest;
         private float _lastGroundedHeight;
         private bool _fallingDown;
         [SerializeField] private float _fallThreshold = 10f;
@@ -154,9 +153,9 @@ namespace Zubble
                 _runBestHeight = transform.position.y;
             }
 
-            if (_runBestHeight > _personalBest)
+            if (_runBestHeight > Inventory.Instance.HighScore)
             {
-                _personalBest = _runBestHeight;
+                Inventory.Instance.SetHighScore(_runBestHeight);
             }
 
             // Handle horizontal movement
