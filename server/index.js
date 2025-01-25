@@ -102,19 +102,19 @@ function handleMessage(message, socket) {
 
       case 'create_bubble':
         data = decodeCreateBubbleData(message);
-        if (state.players[data.id]) {
-          broadcastToAllClients(encodeCreateBubbleMessage(data.playerId, data.bubbleId, data.position));
+        if (state.players[data.playerId]) {
+          broadcastToAllClients(encodeCreateBubbleMessage(data.playerId, data.bubbleId, data.position), data.playerId);
         } else {
-          console.warn(`Player ${data.id} not found for update.`);
+          console.warn(`Player ${data.playerId} not found for update.`);
         }
         break;
         
       case 'ride_bubble':
         data = decodeRideBubbleData(message);
-        if (state.players[data.id]) {
-          broadcastToAllClients(encodeRideBubbleMessage(data.playerId, data.bubbleId));
+        if (state.players[data.playerId]) {
+          broadcastToAllClients(encodeRideBubbleMessage(data.playerId, data.bubbleId), data.playerId);
         } else {
-          console.warn(`Player ${data.id} not found for update.`);
+          console.warn(`Player ${data.playerId} not found for update.`);
         }
         break;
 
