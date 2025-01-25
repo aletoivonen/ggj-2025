@@ -4,14 +4,17 @@ using UnityEngine;
 namespace Zubble.UI
 {
     [RequireComponent(typeof(TMP_InputField))]
+    [RequireComponent(typeof(CheckOS))]
     public class DevConsole : MonoBehaviour
     {
         private TMP_InputField _inputField;
         private SocketManager _socketManager;
+        private CheckOS _checkOS;
 
         private void Awake()
         {
             _inputField = GetComponent<TMP_InputField>();
+            _checkOS = GetComponent<CheckOS>();
             var temp = FindObjectsByType<SocketManager>(FindObjectsSortMode.None);
             if (temp.Length > 0) _socketManager = temp[0] as SocketManager;
         }
@@ -31,6 +34,9 @@ namespace Zubble.UI
                         var pos = player.Value.transform.position;
                         _inputField.text += $"\nID={player.Value.PlayerId} x={pos.x} y={pos.y}";
                     }
+                    break;
+                case "os":
+                    _inputField.text += $"\nOS: {_checkOS.GetOperationSystemFamilyName()} android={_checkOS.IsAndroid()} ios={_checkOS.IsIos()}";
                     break;
                 default:
                     _inputField.text += $"\n{line}";
