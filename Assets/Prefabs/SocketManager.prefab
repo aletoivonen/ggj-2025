@@ -51,3 +51,7 @@ MonoBehaviour:
   _syncInterval: 0.01
   _playerPrefab: {fileID: 1887395238061208191, guid: 81eb646c72b3e1043add4a6997a4d7f1,
     type: 3}
+  _allBubbles: []
+  _maxBubbles: 50
+  _bubbleLiftPrefab: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
+    type: 3}
