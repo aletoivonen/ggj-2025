@@ -13,16 +13,26 @@ const wss = new WebSocket.Server({ server });
 
 const state = {
   players: {},
+  playerSockets: {}
 };
 
 var nextPlayerId = 0;
 
 // Broadcast function to send data to all connected clients
-function broadcastToAllClients(data) {
+function broadcastToAllClients(data, ignorePlayerId = null) {
   const message = JSON.stringify(data);
+
+  var ignoreClient = null;
+
+  if (ignorePlayerId != null) {
+    ignoreClient = state.playerSockets[ignorePlayerId];
+  }
+
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
+    if (client.readyState === WebSocket.OPEN && client != ignoreClient) {
       client.send(message);
+    } else if (client == ignoreClient) {
+      console.log("ignore this client!")
     }
   });
 }
@@ -37,7 +47,8 @@ wss.on('connection', function (socket) {
   const playerId = nextPlayerId++;
   console.log('New player connected.');
   // Add player with a timestamp
-  state.players[playerId] = { timestamp: Date.now() };
+  state.players[playerId] = { Id: playerId, timestamp: Date.now() };
+  state.playerSockets[playerId] = socket;
   // Notify all players about the updated state
   broadcastToAllClients({ type: 'sync', players: state.players });
 
@@ -66,7 +77,16 @@ function handleMessage(message, socket) {
             timestamp: Date.now()
           };
           // Notify all players about the updated state
-          broadcastToAllClients({ type: 'sync', players: state.players });
+          broadcastToAllClients({ type: 'sync', players: state.players }, data.id);
+        } else {
+          console.warn(`Player ${data.id} not found for update.`);
+        }
+        break;
+
+        case 'move':
+        if (state.players[data.id]) {
+          console.log("player moved to " + data.pos)
+          broadcastToAllClients({ type: 'move', player: data.id, pos: data.pos }, data.id);
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }
@@ -75,6 +95,7 @@ function handleMessage(message, socket) {
       case 'exit':
         console.log(`Player exited: ${data.id}`);
         delete state.players[data.id];
+        delete state.playerSockets[data.id];
         // Notify all players about the updated state
         broadcastToAllClients({ type: 'sync', players: state.players });
         break;
