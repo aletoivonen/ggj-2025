@@ -83,19 +83,24 @@ public class SocketManager : MonoSingleton<SocketManager>
         _webSocket.Connect();
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         if (_webSocket == null)
         {
             return;
         }
-
-        _timeSinceLastSync += Time.deltaTime;
-        if (_timeSinceLastSync > _syncInterval && PlayerID >= 0)
+        
+        if (PlayerID >= 0)
         {
-            _timeSinceLastSync = 0.0f;
-
             SendPlayerSyncMessage();
+        }
+    }
+
+    void Update()
+    {
+        if (_webSocket == null)
+        {
+            return;
         }
 
 #if !UNITY_WEBGL || UNITY_EDITOR
