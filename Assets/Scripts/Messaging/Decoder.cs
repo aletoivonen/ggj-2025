@@ -37,7 +37,6 @@ public static class Decoder
     
     public static PlayerInitData DecodePlayerInitData(byte[] bytes)
     {
-        Debug.Log("init data " + bytes.Length);
         return new PlayerInitData
         {
             PlayerId = BitConverter.ToUInt32(bytes, 1),

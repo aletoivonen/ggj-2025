@@ -23,6 +23,7 @@ public class SocketManager : MonoSingleton<SocketManager>
     [SerializeField] private bool _autoConnect = true;
     [SerializeField] private float _syncInterval = 0.3f;
     private float _timeSinceLastSync = 0.0f;
+    private List<SocketPlayer> _tmpPlayers = new List<SocketPlayer>();
 
     [SerializeField] private SocketPlayer _playerPrefab;
 
@@ -147,6 +148,8 @@ public class SocketManager : MonoSingleton<SocketManager>
         color.g = Random.Range(0f, 1f);
         color.b = Random.Range(0f, 1f);
         
+        Debug.Log(PlayerID);
+        
         _webSocket.Send(Encoder.EncodeUpdateData(new PlayerUpdateData
         {
             PlayerId = (uint)PlayerID,
@@ -215,12 +218,19 @@ public class SocketManager : MonoSingleton<SocketManager>
         }
 
         // remove dc'd players
+        _tmpPlayers.Clear();
         foreach (var kvp in _spawnedPlayers)
         {
             if (players.All(p => (int)p.Id != kvp.Value.PlayerId))
             {
-                _spawnedPlayers.Remove(kvp.Key);
+                _tmpPlayers.Add(kvp.Value);
             }
+        }
+        
+        foreach (var player in _tmpPlayers)
+        {
+            _spawnedPlayers.Remove(player.PlayerId);
+            Destroy(player.gameObject);
         }
     }
 
