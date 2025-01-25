@@ -1,108 +1,205 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public class PlayerMoveController : MonoBehaviour
+namespace Zubble
 {
-    [Header("Movement Settings")]
-    public float _moveSpeed = 5f;
-    public float _jumpForce = 10f;
-
-    [Header("Ground Check Settings")]
-    public float _groundCheckDistance = 0.1f;
-    public LayerMask _groundLayer;
-
-    [Header("Reset Settings")]
-    [SerializeField] private float _resetOffset = 1f;
-
-    private Rigidbody2D _rb;
-    private Transform _spawn;
-    private bool _isGrounded;
-
-    private SocketPlayer _socketPlayer;
-
-    void Start()
+    public class PlayerMoveController : MonoBehaviour
     {
-        _rb = GetComponent<Rigidbody2D>();
-        _spawn = GameObject.FindWithTag("Spawn").transform;
+        public static event Action<PlayerMoveController> OnPlayerDead;
+        
+        /// <summary>
+        /// Param: duration
+        /// </summary>
+        public static event Action<float> OnLocalPlayerBubble;
+    
+        [Header("Movement Settings")]
+        public float _moveSpeed = 5f;
+        public float _jumpForce = 10f;
 
-        _socketPlayer = GetComponent<SocketPlayer>();
-    }
+        [Header("Ground Check Settings")]
+        public float _groundCheckDistance = 0.1f;
+        public LayerMask _groundLayer;
 
-    private void OnEnable()
-    {
-        DeathZone.OnDeathTriggered += OnDeath;
-        SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
-    }
+        [Header("Reset Settings")]
+        [SerializeField] private float _resetOffset = 1f;
+        private Rigidbody2D _rb;
+        private Transform _spawn;
+        private bool _isGrounded;
+        private Collider2D _col;
+    
+        public SocketPlayer SocketPlayer { get; private set; }
+    
+        private bool _isSpring;
+        private float _previousVerticalInput;
 
-    private void OnSideTriggerEnter(bool isLeftSide)
-    {
-        if (!_socketPlayer.IsLocalPlayer)
+        private bool _inBubble;
+        private float _bubbleTimer;
+        [SerializeField] private float _bubbleFloatSpeed;
+        
+        [SerializeField] private GameObject _bubbleObject;
+
+        void Start()
         {
-            return;
+            _rb = GetComponent<Rigidbody2D>();
+            _spawn = GameObject.FindWithTag("Spawn").transform;
+            _col = GetComponent<Collider2D>();
+            SocketPlayer = GetComponent<SocketPlayer>();
         }
 
-        if (isLeftSide)
+        private void OnEnable()
         {
-            transform.position = new Vector2(-transform.position.x - _resetOffset, transform.position.y);
-        }
-        else
-        {
-            transform.position = new Vector2(-transform.position.x + _resetOffset, transform.position.y);
-        }
-    }
-
-    private void OnDisable()
-    {
-        DeathZone.OnDeathTriggered -= OnDeath;
-        SideTrigger.OnSideTriggerEnter -= OnSideTriggerEnter;
-    }
-
-    private void OnDeath()
-    {
-        if (!_socketPlayer.IsLocalPlayer)
-        {
-            return;
+            DeathZone.OnDeathTriggered += OnDeath;
+            SideTrigger.OnSideTriggerEnter += OnSideTriggerEnter;
+            Spring.OnSpringEnter += OnSpringEnter;
+            Spring.OnSpringExit += OnSpringExit;
         }
 
-        transform.position = _spawn.position;
-        _rb.linearVelocity = Vector2.zero;
-    }
-
-    void Update()
-    {
-        if (!_socketPlayer.IsLocalPlayer)
+        private void OnSpringExit()
         {
-            return;
+            _isSpring = false;
         }
 
-        // Handle horizontal movement
-        float moveInput = Input.GetAxis("Horizontal");
-        _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
-
-        // Check if the player is grounded
-        _isGrounded = IsGrounded();
-
-        // Handle jumping
-        if (_isGrounded)
+        private void OnSpringEnter()
         {
-            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce);
+            _isSpring = true;
         }
-    }
 
-    private bool IsGrounded()
-    {
-        // Get the bounds of the collider
-        Collider2D collider = GetComponent<Collider2D>();
-        if (collider == null) return false;
+        private void OnSideTriggerEnter(bool isLeftSide)
+        {
+            if (!SocketPlayer.IsLocalPlayer)
+            {
+                return;
+            }
 
-        // Raycast down from the bottom of the collider
-        Vector2 origin = new Vector2(collider.bounds.center.x, collider.bounds.min.y); // Bottom center of the collider
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, _groundCheckDistance, _groundLayer);
+            if (isLeftSide)
+            {
+                transform.position = new Vector2(-transform.position.x - _resetOffset, transform.position.y);
+            }
+            else
+            {
+                transform.position = new Vector2(-transform.position.x + _resetOffset, transform.position.y);
+            }
+        }
 
-        // Optional: Draw ray in the editor for debugging
-        Debug.DrawRay(origin, Vector2.down * _groundCheckDistance, hit.collider != null ? Color.green : Color.red);
+        private void OnDisable()
+        {
+            DeathZone.OnDeathTriggered -= OnDeath;
+            SideTrigger.OnSideTriggerEnter -= OnSideTriggerEnter;
+        }
 
-        return hit.collider != null && _rb.linearVelocity.y < 0.1f; // Returns true if the raycast hits the ground
+        private void OnDeath()
+        {
+            if (!SocketPlayer.IsLocalPlayer)
+            {
+                return;
+            }
+
+            transform.position = _spawn.position;
+            _rb.linearVelocity = Vector2.zero;
+        
+            OnPlayerDead?.Invoke(this);
+        }
+
+        void Update()
+        {
+            if (!SocketPlayer.IsLocalPlayer)
+            {
+                return;
+            }
+
+            // Handle horizontal movement
+            float moveInput = Input.GetAxis("Horizontal");
+            _rb.linearVelocity = new Vector2(moveInput * _moveSpeed, _rb.linearVelocity.y);
+
+            if (_inBubble)
+            {
+                _rb.linearVelocityY = _bubbleFloatSpeed;
+                
+                _bubbleTimer -= Time.deltaTime;
+                if (_bubbleTimer <= 0f)
+                {
+                    _inBubble = false;
+                    _bubbleObject.SetActive(false);
+                }
+
+                return;
+            }
+
+            // Use soap
+            float vertical = Input.GetAxis("Vertical");
+            if (_previousVerticalInput == 0f && vertical > 0) 
+            {
+                if (Inventory.Instance.Soap >= 1f)
+                {
+                    Inventory.Instance.RemoveSoap(1f);
+                    Debug.Log($"Used soap, soap left: {Inventory.Instance.Soap}");
+                }
+                else
+                {
+                    Debug.Log($"{Inventory.Instance.Soap} is not enough soap");
+                }
+            }
+
+            // Check if the player is grounded
+            _isGrounded = IsGrounded();
+
+            // Handle jumping
+            if (_isGrounded)
+            {
+                _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce);
+                if (_isSpring)
+                {
+                    _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
+                    _isSpring = false;
+                }
+            }
+
+            _previousVerticalInput = vertical;
+        }
+
+        private bool IsGrounded()
+        {
+            bool isNotGoingUp = _rb.linearVelocity.y < 0.1f;
+            if (!isNotGoingUp)
+            {
+                return false;
+            }
+
+            int raycasts = 5;
+            for (int i = 0; i < raycasts; i++)
+            {
+                float x = _col.bounds.min.x + (_col.bounds.size.x / (raycasts - 1)) * i;
+                Vector2 origin = new Vector2(x, _col.bounds.min.y);
+                RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, _groundCheckDistance, _groundLayer);
+                bool hitGround = hit.collider != null;
+                Debug.DrawRay(origin, Vector2.down * _groundCheckDistance, hitGround ? Color.green : Color.red);
+                if (hitGround)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void RideBubble(float duration)
+        {
+            if (!SocketPlayer.IsLocalPlayer)
+            {
+                return;
+            }
+
+            _inBubble = true;
+            _bubbleTimer = duration;
+            
+            _bubbleObject.SetActive(true);
+            
+            OnLocalPlayerBubble?.Invoke(duration);
+        }
+
+        public void PickUpSoap()
+        {
+            Debug.Log("Picked up soap!");
+        }
     }
 }

@@ -48,6 +48,6 @@ MonoBehaviour:
   _editorAddress: ws://localhost:8080
   _address: wss://zubble.xyz/websocket
   _autoConnect: 1
-  _syncInterval: 0.3
+  _syncInterval: 0.01
   _playerPrefab: {fileID: 1887395238061208191, guid: 81eb646c72b3e1043add4a6997a4d7f1,
     type: 3}

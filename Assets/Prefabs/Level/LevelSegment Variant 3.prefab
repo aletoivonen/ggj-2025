@@ -306,6 +306,95 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 4637169636348232887}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5724196460872895849
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5196132923792107311}
+    m_Modifications:
+    - target: {fileID: 3180529977957950365, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_Name
+      value: BubbleLift
+      objectReference: {fileID: 0}
+    - target: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: _spawnPosition.x
+      value: 1.89
+      objectReference: {fileID: 0}
+    - target: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: _spawnPosition.y
+      value: 3.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 6706501863401133850, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: _spawnPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.89
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 277aee2dc06193242909c1a978b3c870, type: 3}
+--- !u!4 &2561577018018573193 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7853401317986641632, guid: 277aee2dc06193242909c1a978b3c870,
+    type: 3}
+  m_PrefabInstance: {fileID: 5724196460872895849}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6582943704346969996
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -627,6 +716,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5265562078742227264}
+    - targetCorrespondingSourceObject: {fileID: 3999566387772024626, guid: 76cc012627c749d41a2579564354e00f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2561577018018573193}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 76cc012627c749d41a2579564354e00f, type: 3}
 --- !u!4 &5196132923792107311 stripped
