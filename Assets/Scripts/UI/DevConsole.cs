@@ -1,19 +1,22 @@
+using TMPro;
 using UnityEngine;
 
-namespace Zubble
+namespace Zubble.UI
 {
+    [RequireComponent(typeof(TMP_InputField))]
     public class DevConsole : MonoBehaviour
     {
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        private TMP_InputField _inputField;
+
+        private void Awake()
         {
-        
+            _inputField = GetComponent<TMP_InputField>();
         }
 
-        // Update is called once per frame
-        void Update()
+        public void InputLine(string line)
         {
-        
+            _inputField.text += $"\n{line}";
+            // TODO: parse line here
         }
     }
 }

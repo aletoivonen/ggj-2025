@@ -7,6 +7,7 @@ namespace Zubble.UI
     public class ConsoleInputField : MonoBehaviour
     {
         [SerializeField] private TMP_InputField _history;
+        [SerializeField] private DevConsole _console;
 
         private TMP_InputField _inputField;
 
@@ -18,7 +19,7 @@ namespace Zubble.UI
 
         private void OnSubmit(string arg0)
         {
-            _history.text += $"\n{arg0}";
+            _console.InputLine(arg0);
             _inputField.text = "";
         }
     }
