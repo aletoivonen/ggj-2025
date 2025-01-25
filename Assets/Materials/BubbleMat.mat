@@ -8,7 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BubbleMat
-  m_Shader: {fileID: -6465566751694194690, guid: 15f576dda6e9c2d4790432e5d5de5f4a, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 15f576dda6e9c2d4790432e5d5de5f4a,
+    type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -73,7 +74,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ThicknessNoise:
-        m_Texture: {fileID: 2800000, guid: e34cfda51c0b38547a19ca56b6d83eb0, type: 3}
+        m_Texture: {fileID: 2800000, guid: ddccd891dcf2f9e4da29a365d32653bc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ThicknessTexture:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -98,27 +103,30 @@ Material:
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _ColorLerpMultip: 1.41
+    - _ColorLerpMultip: 1.75
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DotMultiply: 2.28
+    - _DotMultiply: 0.91
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _Float: 0
+    - _FresnelPow: 1.29
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _LightPow: 6.46
-    - _MaxAlpha: 0.15
+    - _IOR: -0.6
+    - _LightPow: 11.53
+    - _MaxAlpha: 0.61
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RefractionBias: 0.54
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -126,8 +134,8 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _Thickness: 5.35
-    - _ThicknessSpeed: 0.003
-    - _UvScale: 0.06
+    - _ThicknessSpeed: 0.01
+    - _UvScale: 0.16
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
