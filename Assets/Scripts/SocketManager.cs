@@ -132,9 +132,9 @@ public class SocketManager : MonoSingleton<SocketManager>
             return;
         }
 
-        Vector2 pos = p.ToObject<Vector2>();
+        SyncPos pos = p.ToObject<SyncPos>();
 
-        sp.transform.position = pos;
+        sp.transform.position = new Vector2(pos.x, pos.y);
     }
 
     private void SendPlayerProfile()
@@ -287,5 +287,12 @@ public class SocketManager : MonoSingleton<SocketManager>
 
             return Color.white;
         }
+    }
+
+    [Serializable]
+    private class SyncPos
+    {
+        public float x;
+        public float y;
     }
 }
