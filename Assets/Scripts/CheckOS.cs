@@ -21,7 +21,7 @@ namespace Zubble
         public bool IsAndroid()
         {
 #if !UNITY_EDITOR && UNITY_WEBGL
-            return isAndroid()
+            return isAndroid();
 #else
             return false;
 #endif
@@ -30,7 +30,7 @@ namespace Zubble
         public bool IsIos()
         {
 #if !UNITY_EDITOR && UNITY_WEBGL
-            return isIos()
+            return isIos();
 #else
             return false;
 #endif
@@ -40,7 +40,7 @@ namespace Zubble
         {
 #if !UNITY_EDITOR && UNITY_WEBGL
             var os = getOperationSystemFamilyName();
-            var copy = String.Copy(os);
+            var copy = string.Copy(os);
             freeBuffer(os);
             return copy;
 #else
