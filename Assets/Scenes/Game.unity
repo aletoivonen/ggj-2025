@@ -5343,6 +5343,31 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1341208436878088267, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341208436878088267, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341208436878088267, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341208436878088267, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341208436878088267, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1455206607797491999, guid: 80608468d07e5b548a687585fbcd6408,
         type: 3}
       propertyPath: m_Pivot.x
@@ -5441,6 +5466,31 @@ PrefabInstance:
     - target: {fileID: 1455206607797491999, guid: 80608468d07e5b548a687585fbcd6408,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609648969607557446, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609648969607557446, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609648969607557446, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609648969607557446, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609648969607557446, guid: 80608468d07e5b548a687585fbcd6408,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7821492002450414474, guid: 80608468d07e5b548a687585fbcd6408,

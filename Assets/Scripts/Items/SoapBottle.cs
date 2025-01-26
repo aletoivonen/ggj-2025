@@ -7,6 +7,21 @@ namespace Zubble.Items
     {
         [SerializeField] private Transform _child;
 
+        private void Awake()
+        {
+            PlayerMoveController.OnPlayerDead += OnPlayerDead;
+        }
+
+        private void OnDestroy()
+        {
+            PlayerMoveController.OnPlayerDead -= OnPlayerDead;
+        }
+
+        private void OnPlayerDead(PlayerMoveController obj)
+        {
+            ToggleActive(true);
+        }
+
         private void Update()
         {
             Vector3 pos = _child.transform.localPosition;
@@ -34,7 +49,13 @@ namespace Zubble.Items
             }
 
             Inventory.Instance.AddSoap(1f);
-            Destroy(gameObject);
+            ToggleActive(false);
+        }
+
+        private void ToggleActive(bool active)
+        {
+            GetComponent<Collider2D>().enabled = active;
+            GetComponentInChildren<Renderer>().enabled = active;
         }
     }
 }
