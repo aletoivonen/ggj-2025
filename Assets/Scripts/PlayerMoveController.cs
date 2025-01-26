@@ -48,11 +48,18 @@ namespace Zubble
         private float _jumpWindow = 0.1f;
 
         private float _runBestHeight;
-        private float _lastGroundedHeight;
+        private float _highestGroundedHeight;
         private bool _fallingDown;
         [SerializeField] private float _fallThreshold = 10f;
 
         [SerializeField] private AudioSource _playerSounds;
+
+        private Animator _animator;
+
+        private void Awake()
+        {
+            _animator = GetComponent<Animator>();
+        }
 
         void Start()
         {
@@ -195,12 +202,16 @@ namespace Zubble
 
             if (_isGrounded)
             {
-                _lastGroundedHeight = transform.position.y;
+                _highestGroundedHeight = Mathf.Max(_highestGroundedHeight, transform.position.y);
             }
             else if (_runBestHeight - transform.position.y > _fallThreshold && transform.position.y > 10)
             {
                 FallDown();
             }
+            
+            _animator.SetFloat("velocityX", _rb.linearVelocityX);
+            _animator.SetFloat("velocityY", _rb.linearVelocityY);
+            _animator.SetBool("grounded", _isGrounded);
 
             // Handle jumping
             if (_isGrounded && _timeSinceJump < _jumpWindow)
@@ -220,6 +231,8 @@ namespace Zubble
         {
             Debug.Log("Fall down");
             _fallingDown = true;
+            
+            _animator.SetTrigger("hurt");
 
             _col.enabled = false;
             _rb.linearVelocity = new Vector2(0, _rb.linearVelocityY);
@@ -258,6 +271,8 @@ namespace Zubble
             {
                 return;
             }
+            
+            _animator.SetTrigger("victory");
 
             if (Inventory.Instance.Soap >= 1f && !existing)
             {

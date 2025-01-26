@@ -220,6 +220,8 @@ public class SocketManager : MonoSingleton<SocketManager>
         color.g = Random.Range(0f, 1f);
         color.b = Random.Range(0f, 1f);
 
+        SocketPlayer.LocalPlayer.GetComponent<SpriteRenderer>().color = color;
+
         Debug.Log(PlayerID);
 
         _webSocket.Send(
@@ -293,6 +295,7 @@ public class SocketManager : MonoSingleton<SocketManager>
                 SocketPlayer socketPlayer = Instantiate(_playerPrefab);
                 socketPlayer.PlayerId = (int)player.Id;
                 socketPlayer.SetIsLocalPlayer(false);
+                socketPlayer.GetComponent<SpriteRenderer>().color = player.Color;
                 _spawnedPlayers.Add((int)player.Id, socketPlayer);
             }
         }
