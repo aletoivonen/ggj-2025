@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>%UNITY_WEB_NAME%</title>
+<style>
+body {
+    margin: 0;
+}
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#unityContainer {
+    width: 100vw;
+    height: 100vh;
+}
+</style>
+<script src="%UNITY_WEBGL_LOADER_URL%"></script>
+<script>
+var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%", {
+    compatibilityCheck(unityInstance, onSuccess, onError) {
+        if (UnityLoader.SystemInfo.hasWebGL < 2)
+            unityInstance.popup("Your browser does not support WebGL 2.0", [{text: "OK", callback: onError}]);
+        else
+            onSuccess();
+    }
+});
+window.addEventListener("resize", function() {
+    var canvas = unityInstance.Module.canvas;
+    canvas.width  = window.innerWidth * window.devicePixelRatio;
+    canvas.height = window.innerHeight * window.devicePixelRatio;
+});
+</script>
+</head>
+<body>
+<div id="unityContainer"></div>
+</body>
+</html>
