@@ -133,6 +133,10 @@ function handleMessage(message, socket) {
         }
         break;
 
+      case 'text_data':
+        broadcastToAllClients(message);
+        break;
+
       default:
         console.warn('Unknown message type:', data.type);
     }

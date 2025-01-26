@@ -9,12 +9,18 @@ namespace Zubble
         public List<AudioClip> HurtSounds = new();
         public List<AudioClip> SoapSounds = new();
         public List<AudioClip> FallingSounds = new();
+        public List<AudioClip> DeathSounds = new();
 
         public AudioSource MusicSource;
 
         public AudioClip RandomFallSound()
         {
             return FallingSounds[Random.Range(0, FallingSounds.Count)];
+        }
+        
+        public AudioClip RandomDeathSound()
+        {
+            return DeathSounds[Random.Range(0, DeathSounds.Count)];
         }
         
         public void ToggleMusic(bool on)

@@ -14,8 +14,9 @@ using Random = UnityEngine.Random;
 
 public class SocketManager : MonoSingleton<SocketManager>
 {
-    public static Action<uint> OnHighScoreUpdate;
-    
+    public static Action<uint, string> OnHighScoreUpdate;
+    public static Action OnConnected;
+
     public int PlayerID { get; private set; } = -1;
 
     [SerializeField] private bool _useEditorAddress;
@@ -39,16 +40,20 @@ public class SocketManager : MonoSingleton<SocketManager>
 
     [SerializeField] private BubbleLift _bubbleLiftPrefab;
 
+    private string _playerName;
+
     protected override void OnAwake()
     {
         base.OnAwake();
 
         PlayerMoveController.OnLocalPlayerBubble += OnLocalPlayerBubble;
+        PlayerProfileInput.OnPlayerNameChosen += OnPlayerNameChosen;
     }
 
     private void OnDestroy()
     {
         PlayerMoveController.OnLocalPlayerBubble -= OnLocalPlayerBubble;
+        PlayerProfileInput.OnPlayerNameChosen -= OnPlayerNameChosen;
     }
 
     private void OnLocalPlayerBubble(Vector3 pos, float duration, bool existing)
@@ -71,6 +76,12 @@ public class SocketManager : MonoSingleton<SocketManager>
                 PlayerId = (uint)PlayerID
             }
         );
+    }
+
+    private void OnPlayerNameChosen(string playerName)
+    {
+        _playerName = playerName;
+        Connect();
     }
 
     private void Start()
@@ -158,9 +169,24 @@ public class SocketManager : MonoSingleton<SocketManager>
             case MessageType.UpdateScore:
                 HandleScoreUpdate(bytes);
                 break;
+            case MessageType.TextData:
+                HandleTextData(bytes);
+                break;
             case MessageType.Update:
             default:
                 throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void HandleTextData(byte[] bytes)
+    {
+        string message = BitConverter.ToString(bytes.Skip(1).Take(bytes.Length - 1).ToArray());
+        JObject json = JObject.Parse(message);
+
+        if (json.TryGetValue("name", out JToken nameVal))
+        {
+            int playerId = json.GetValue("id").ToObject<int>();
+            SetPlayerName(playerId, nameVal.ToString());
         }
     }
 
@@ -186,7 +212,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position + Vector2.up * 0.25f, Quaternion.identity);
         _allBubbles.Add(bubble);
     }
-    
+
     private void HandleScoreUpdate(byte[] bytes)
     {
         PlayerScoreData data = Decoder.DecodePlayerScoreData(bytes);
@@ -195,7 +221,24 @@ public class SocketManager : MonoSingleton<SocketManager>
         if (data.Score > _currentHighScore)
         {
             _currentHighScore = data.Score;
-            OnHighScoreUpdate?.Invoke(_currentHighScore);
+            OnHighScoreUpdate?.Invoke(_currentHighScore, GetPlayerName((int)data.PlayerId));
+        }
+    }
+
+    private string GetPlayerName(int playerId)
+    {
+        if (_spawnedPlayers.ContainsKey(playerId))
+        {
+            var player = _spawnedPlayers.FirstOrDefault(p => p.Value.PlayerId == playerId);
+            return player.Value.PlayerName;
+        }
+        else if (playerId == PlayerID)
+        {
+            return _playerName;
+        }
+        else
+        {
+            return "player " + playerId;
         }
     }
 
@@ -235,9 +278,9 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void SendPlayerProfile()
     {
         Color color = Color.white;
-        color.r = Random.Range(0f, 1f);
-        color.g = Random.Range(0f, 1f);
-        color.b = Random.Range(0f, 1f);
+        color.r = Random.Range(0, 2);
+        color.g = Random.Range(0, 2);
+        color.b = Random.Range(0, 2);
 
         SocketPlayer.LocalPlayer.GetComponent<SpriteRenderer>().color = color;
 
@@ -252,6 +295,10 @@ public class SocketManager : MonoSingleton<SocketManager>
                 }
             )
         );
+
+        var msg = GetBaseMessage();
+        msg["name"] = _playerName;
+        _webSocket.SendText(JsonConvert.SerializeObject(msg));
     }
 
     private void SendPlayerSyncMessage()
@@ -274,30 +321,28 @@ public class SocketManager : MonoSingleton<SocketManager>
         if (highscore != null)
         {
             _currentHighScore = highscore.Score;
-            OnHighScoreUpdate?.Invoke(_currentHighScore);
+            OnHighScoreUpdate?.Invoke(_currentHighScore, GetPlayerName((int)highscore.PlayerId));
         }
-        
+
         PlayerID = (int)data.PlayerId;
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
-        SocketPlayer.LocalPlayer.GetComponentInChildren<TextMeshProUGUI>().text = "Player " + PlayerID;
+        SocketPlayer.LocalPlayer.GetComponentInChildren<TextMeshProUGUI>().text = _playerName;
         CheckSpawnedPlayers(data.Players);
 
         SendPlayerProfile();
     }
 
-    private void HandleGameEvent(byte[] bytes)
-    {
-        Debug.Log("Game event: " + bytes);
-    }
-
-    private void HandleExitPlayer(byte[] bytes)
-    {
-        CheckSpawnedPlayers(Decoder.DecodePlayerSyncData(bytes).Players);
-    }
-
     private void HandleSyncPlayer(byte[] bytes)
     {
         CheckSpawnedPlayers(Decoder.DecodePlayerSyncData(bytes).Players);
+    }
+
+    private void SetPlayerName(int id, string name)
+    {
+        var player = _spawnedPlayers.FirstOrDefault(p => p.Value.PlayerId == id);
+
+        player.Value.GetComponentInChildren<TextMeshProUGUI>().text = name;
+        player.Value.PlayerName = name;
     }
 
     private void CheckSpawnedPlayers(PlayerData[] players)
@@ -352,6 +397,14 @@ public class SocketManager : MonoSingleton<SocketManager>
         return baseMessage;
     }
 
+    private byte[] GetTextMessageBytes(JObject json)
+    {
+        List<byte> msg = new();
+        msg.Add((byte)MessageType.TextData);
+        msg.AddRange(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(json)));
+        return msg.ToArray();
+    }
+
     private void OnClose(WebSocketCloseCode closecode)
     {
         Debug.Log("Socket closed: " + closecode.ToString());
@@ -360,6 +413,7 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void OnOpen()
     {
         Debug.Log("Connection open!");
+        OnConnected?.Invoke();
     }
 
     private void OnError(string e)

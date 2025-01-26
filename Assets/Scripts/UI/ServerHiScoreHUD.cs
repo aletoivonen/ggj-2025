@@ -20,9 +20,9 @@ namespace Zubble.UI
             SocketManager.OnHighScoreUpdate -= Refresh;
         }
 
-        public void Refresh(uint score)
+        public void Refresh(uint score, string name)
         {
-            _textMeshProUGUI.text = $"Server best: {score:F2}";
+            _textMeshProUGUI.text = $"Server best: {name} {score:F2}";
         }
     }
 }
