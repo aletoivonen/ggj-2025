@@ -6,6 +6,7 @@ using UnityEngine;
 using NativeWebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using Zubble;
 using ColorUtility = UnityEngine.ColorUtility;
@@ -260,6 +261,7 @@ public class SocketManager : MonoSingleton<SocketManager>
         PlayerInitData data = Decoder.DecodePlayerInitData(bytes);
         PlayerID = (int)data.PlayerId;
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
+        SocketPlayer.LocalPlayer.GetComponentInChildren<TextMeshProUGUI>().text = "Player " + PlayerID;
         CheckSpawnedPlayers(data.Players);
 
         SendPlayerProfile();
@@ -303,6 +305,7 @@ public class SocketManager : MonoSingleton<SocketManager>
                 socketPlayer.PlayerId = (int)player.Id;
                 socketPlayer.SetIsLocalPlayer(false);
                 socketPlayer.GetComponent<SpriteRenderer>().color = player.Color;
+                socketPlayer.GetComponentInChildren<TextMeshProUGUI>().text = "Player " + player.Id;
                 _spawnedPlayers.Add((int)player.Id, socketPlayer);
             }
         }
