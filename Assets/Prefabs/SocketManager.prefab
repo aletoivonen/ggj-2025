@@ -44,10 +44,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f2a660bb477e0b46a2d80de849ebcd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _useEditorAddress: 1
+  _useEditorAddress: 0
   _editorAddress: ws://localhost:8080
   _address: wss://zubble.xyz/websocket
-  _autoConnect: 1
+  _autoConnect: 0
   _syncInterval: 0.01
   _playerPrefab: {fileID: 1887395238061208191, guid: 81eb646c72b3e1043add4a6997a4d7f1,
     type: 3}

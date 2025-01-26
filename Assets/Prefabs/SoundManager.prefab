@@ -50,6 +50,9 @@ MonoBehaviour:
   SoapSounds: []
   FallingSounds:
   - {fileID: 8300000, guid: fb29131edf451b0439049bdadbed7a00, type: 3}
+  DeathSounds:
+  - {fileID: 8300000, guid: e18959d46b63f3c4c8cc020a433cf848, type: 3}
+  - {fileID: 8300000, guid: 6c05149e5a2fba64ba172e25a61074b7, type: 3}
   MusicSource: {fileID: 1760264327142315597}
 --- !u!82 &1760264327142315597
 AudioSource:

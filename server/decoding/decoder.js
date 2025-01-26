@@ -17,6 +17,8 @@ function decodeMessageType(buffer, offset) {
             return "ride_bubble";
         case 7:
             return "update_scores";
+        case 8:
+            return "text_data";
     }
 }
 

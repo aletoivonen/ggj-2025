@@ -56,6 +56,8 @@ namespace Zubble
 
         private Animator _animator;
 
+        private bool _dead;
+
         private void Awake()
         {
             _animator = GetComponent<Animator>();
@@ -117,6 +119,22 @@ namespace Zubble
                 return;
             }
 
+            _dead = true;
+
+            StartCoroutine(DelayDeath());
+
+            OnPlayerDead?.Invoke(this);
+        }
+
+        private IEnumerator DelayDeath()
+        {
+            _animator.SetTrigger("dead");
+            _rb.linearVelocity = Vector2.zero;
+            
+            _playerSounds.PlayOneShot(SoundManager.Instance.RandomDeathSound());
+            
+            yield return new WaitForSeconds(0.75f);
+
             transform.position = _spawn.position;
             _rb.linearVelocity = Vector2.zero;
 
@@ -126,12 +144,13 @@ namespace Zubble
 
             Inventory.Instance.RemoveSoap(Inventory.Instance.Soap);
 
-            OnPlayerDead?.Invoke(this);
+            _dead = false;
         }
 
         void Update()
         {
-            if (!SocketPlayer.IsLocalPlayer)
+            // not local or game not init
+            if (!SocketPlayer.IsLocalPlayer || SocketManager.Instance.PlayerID < 0 || _dead)
             {
                 return;
             }
@@ -194,7 +213,7 @@ namespace Zubble
 
             if (MultiInput.Instance.GetButtonDown("Jump"))
             {
-                _timeSinceJump = 0.0f;  
+                _timeSinceJump = 0.0f;
             }
 
             // Check if the player is grounded
@@ -208,7 +227,7 @@ namespace Zubble
             {
                 FallDown();
             }
-            
+
             _animator.SetFloat("velocityX", _rb.linearVelocityX);
             _animator.SetFloat("velocityY", _rb.linearVelocityY);
             _animator.SetBool("grounded", _isGrounded);
@@ -231,12 +250,12 @@ namespace Zubble
         {
             Debug.Log("Fall down");
             _fallingDown = true;
-            
+
             _animator.SetTrigger("hurt");
 
             _col.enabled = false;
             _rb.linearVelocity = new Vector2(0, _rb.linearVelocityY);
-            
+
             _playerSounds.PlayOneShot(SoundManager.Instance.RandomFallSound());
         }
 
@@ -271,7 +290,7 @@ namespace Zubble
             {
                 return;
             }
-            
+
             _animator.SetTrigger("victory");
 
             if (Inventory.Instance.Soap >= 1f && !existing)

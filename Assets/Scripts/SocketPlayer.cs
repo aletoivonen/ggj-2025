@@ -10,6 +10,8 @@ public class SocketPlayer : MonoBehaviour
     [field: SerializeField] public bool IsLocalPlayer { get; private set; }
     public int PlayerId = -1;
 
+    public string PlayerName;
+
     private void Start()
     {
         if (LocalPlayer == null)

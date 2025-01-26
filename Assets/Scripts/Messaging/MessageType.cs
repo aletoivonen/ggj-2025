@@ -6,6 +6,7 @@ public enum MessageType
     Update = 4,
     CreateBubble = 5,
     RideBubble = 6,
-    UpdateScore = 7
+    UpdateScore = 7,
+    TextData = 8
 }
 
