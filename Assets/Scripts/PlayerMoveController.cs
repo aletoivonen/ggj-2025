@@ -58,9 +58,15 @@ namespace Zubble
 
         private bool _dead;
 
+        private float _lastPosCheckTimer;
+        private Vector3 _lastRemotePos;
+
+        private SpriteRenderer _rend;
+
         private void Awake()
         {
             _animator = GetComponent<Animator>();
+            _rend = GetComponent<SpriteRenderer>();
         }
 
         void Start()
@@ -149,8 +155,36 @@ namespace Zubble
 
         void Update()
         {
+            if (!SocketPlayer.IsLocalPlayer)
+            {
+                
+                _lastPosCheckTimer += Time.deltaTime;
+
+                if (_lastPosCheckTimer > 0.1f)
+                {
+                    _lastPosCheckTimer = 0.0f;
+                }
+                else
+                {
+                    return;
+                }
+                
+                Vector3 moveDir = transform.position - _lastRemotePos;
+                GetComponentInChildren<SpriteFlipper>().enabled = false;
+
+                _rend.flipX = moveDir.x < 0f;
+                
+                _animator.SetFloat("velocityX", Mathf.Abs(moveDir.x));
+                _animator.SetFloat("velocityY", moveDir.y);
+                _animator.SetBool("grounded", IsGrounded());
+
+                _lastRemotePos = transform.position;
+                
+                return;
+            }
+            
             // not local or game not init
-            if (!SocketPlayer.IsLocalPlayer || SocketManager.Instance.PlayerID < 0 || _dead)
+            if (SocketManager.Instance.PlayerID < 0 || _dead)
             {
                 return;
             }
@@ -227,7 +261,7 @@ namespace Zubble
                 FallDown();
             }
 
-            _animator.SetFloat("velocityX", _rb.linearVelocityX);
+            _animator.SetFloat("velocityX", Mathf.Abs(_rb.linearVelocityX));
             _animator.SetFloat("velocityY", _rb.linearVelocityY);
             _animator.SetBool("grounded", _isGrounded);
 
