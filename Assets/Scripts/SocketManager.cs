@@ -185,6 +185,8 @@ public class SocketManager : MonoSingleton<SocketManager>
     
     private void HandleScoreUpdate(byte[] bytes)
     {
+        PlayerScoreData data = Decoder.DecodePlayerScoreData(bytes);
+        Debug.Log("High score " + data.PlayerId + " " + data.Score);
     }
 
     private void HandlePlayerRideBubble(byte[] bytes)
