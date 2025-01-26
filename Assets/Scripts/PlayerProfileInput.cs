@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Zubble
 {
@@ -16,6 +17,8 @@ namespace Zubble
         {
             _input = GetComponentInChildren<TMP_InputField>();
             SocketManager.OnConnected += OnConnected;
+
+            _input.text = "Player#" + Random.Range(1000, 9999);
         }
 
         private void OnDestroy()
