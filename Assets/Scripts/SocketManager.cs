@@ -151,6 +151,9 @@ public class SocketManager : MonoSingleton<SocketManager>
             case MessageType.RideBubble:
                 HandlePlayerRideBubble(bytes);
                 break;
+            case MessageType.UpdateScore:
+                HandleScoreUpdate(bytes);
+                break;
             case MessageType.Update:
             default:
                 throw new ArgumentOutOfRangeException();
@@ -178,6 +181,10 @@ public class SocketManager : MonoSingleton<SocketManager>
 
         var bubble = Instantiate(_bubbleLiftPrefab, createBubbleData.Position + Vector2.up * 0.25f, Quaternion.identity);
         _allBubbles.Add(bubble);
+    }
+    
+    private void HandleScoreUpdate(byte[] bytes)
+    {
     }
 
     private void HandlePlayerRideBubble(byte[] bytes)

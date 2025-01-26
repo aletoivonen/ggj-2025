@@ -57,7 +57,6 @@ function encodeSyncMessage(players) {
 
     // Write number of players (4 bytes)
     buffer.writeUInt32LE(playerEntries.length, offset);
-    console.log("sync entries lenght " + playerEntries.length);
     offset += 4;
 
     // Write player data (15 bytes per player)
@@ -67,14 +66,14 @@ function encodeSyncMessage(players) {
         offset = encodeVector2(buffer, { x: player.x, y: player.y }, offset);
     });
 
-    console.log(buffer.length);
     return buffer;
 }
 
-function encodeInitMessage(playerId, players) {
+function encodeInitMessage(playerId, players, scores) {
+    const scoreEntries = Object.values(scores);
     const playerEntries = Object.values(players);
     // Calculate buffer size: 1 byte (type) + 4 bytes (playerId) + 4 bytes (number of players) + 13 bytes per player
-    const buffer = Buffer.alloc(1 + 4 + 4 + playerEntries.length * 15);
+    const buffer = Buffer.alloc(1 + 4 + 4 + playerEntries.length * 15 + 4 + scoreEntries.length * 8);
 
     let offset = 0;
 
@@ -87,7 +86,6 @@ function encodeInitMessage(playerId, players) {
 
     // Write number of players (4 bytes)
     buffer.writeUInt32LE(playerEntries.length, offset);
-    console.log("init entries lenght " + playerEntries.length);
     offset += 4;
 
     // Write player data (15 bytes per player)
@@ -95,6 +93,16 @@ function encodeInitMessage(playerId, players) {
         offset = encodeUInt(buffer, player.id, offset);
         offset = encodeColor(buffer, player.color, offset);
         offset = encodeVector2(buffer, { x: player.x, y: player.y }, offset);
+    });
+    
+    // Write number of player scores (4 bytes)
+    buffer.writeUInt32LE(scoreEntries.length, offset);
+    offset += 4;
+
+    // Write player score data (8 bytes per player)
+    scoreEntries.forEach((score) => {
+        offset = encodeUInt(buffer, score.playerId, offset);
+        offset = encodeUInt(buffer, score.score, offset);
     });
 
     return buffer;
@@ -117,6 +125,8 @@ function encodeCreateBubbleMessage(playerId, bubbleId, position) {
 
     // Write position (2 floats: x and y, 4 bytes each)
     offset = encodeVector2(buffer, position, offset);
+
+    return buffer;
 }
 
 function encodeRideBubbleMessage(playerId, bubbleId) {
@@ -125,7 +135,7 @@ function encodeRideBubbleMessage(playerId, bubbleId) {
     let offset = 0;
 
     // Write type (1 byte)
-    buffer.writeUInt8(5, offset); // Type = 6 (ride bubble)
+    buffer.writeUInt8(6, offset); // Type = 6 (ride bubble)
     offset += 1;
 
     // Write player ID (4 bytes)
@@ -133,6 +143,26 @@ function encodeRideBubbleMessage(playerId, bubbleId) {
 
     // Write bubble ID (4 bytes)
     offset = encodeUInt(buffer, bubbleId, offset);
+
+    return buffer;
+}
+
+function encodeUpdateScoreMessage(playerId, score) {
+    const buffer = Buffer.alloc(1 + 4 + 4);
+
+    let offset = 0;
+
+    // Write type (1 byte)
+    buffer.writeUInt8(7, offset); // Type = 7 (update scores)
+    offset += 1;
+
+    // Write player ID (4 bytes)
+    offset = encodeUInt(buffer, playerId, offset);
+
+    // Write score (4 bytes)
+    offset = encodeUInt(buffer, score, offset);
+
+    return buffer;
 }
 
 exports.encodeInitMessage = encodeInitMessage;
@@ -140,3 +170,4 @@ exports.encodeSyncMessage = encodeSyncMessage;
 exports.encodeMoveMessage = encodeMoveMessage;
 exports.encodeCreateBubbleMessage = encodeCreateBubbleMessage;
 exports.encodeRideBubbleMessage = encodeRideBubbleMessage;
+exports.encodeUpdateScoreMessage = encodeUpdateScoreMessage;

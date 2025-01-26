@@ -16,6 +16,7 @@ const encodeMoveMessage = require('./encoding/encoder').encodeMoveMessage;
 const encodeSyncMessage = require('./encoding/encoder').encodeSyncMessage;
 const encodeCreateBubbleMessage = require('./encoding/encoder').encodeCreateBubbleMessage;
 const encodeRideBubbleMessage = require('./encoding/encoder').encodeRideBubbleMessage;
+const encodeUpdateScoreMessage = require('./encoding/encoder').encodeUpdateScoreMessage;
 
 const decodePlayerUpdateData = require('./decoding/decoder').decodePlayerUpdateData;
 const decodePlayerMoveData = require('./decoding/decoder').decodePlayerMoveData;
@@ -27,7 +28,7 @@ const decodeRideBubbleData = require('./decoding/decoder').decodeRideBubbleData;
 const state = {
   players: {},
   playerSockets: {},
-    
+  scores: {}
 };
 
 var nextPlayerId = 0;
@@ -57,12 +58,12 @@ wss.on('connection', function (socket) {
   console.log(socket.send)
 
   const playerId = nextPlayerId++;
-  console.log('New player connected.');
+  console.log('New player connected id ' + playerId);
   // Add player with a timestamp
   state.players[playerId] = { Id: playerId, timestamp: Date.now() };
   state.playerSockets[playerId] = socket;
   // Notify all players about the updated state
-  socket.send(encodeInitMessage(playerId, state.players));
+  socket.send(encodeInitMessage(playerId, state.players, state.scores));
   broadcastToAllClients(encodeSyncMessage(state.players));
 
   socket.on('message', (message) => handleMessage(message, socket));
@@ -86,6 +87,7 @@ function handleMessage(message, socket) {
           };
           // Notify all players about the updated state
           broadcastToAllClients(encodeSyncMessage(state.players), data.id);
+          console.log('new player count ' + Object.values(state.playerSockets).length);
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }
@@ -95,6 +97,19 @@ function handleMessage(message, socket) {
         data = decodePlayerMoveData(message);
         if (state.players[data.id]) {
           broadcastToAllClients(encodeMoveMessage(data.id, data.position));
+          const scorePosition = Math.floor(data.position.y);
+          if (!state.scores[data.id]) {
+            state.scores[data.id] = {
+                playerId: data.id,
+                score: scorePosition
+            }
+          }
+          
+          if (scorePosition > state.scores[data.id].score) {
+            scorePosition < 0 ? 0 : scorePosition;;
+            state.scores[data.id].score = scorePosition;
+            //broadcastToAllClients(encodeUpdateScoreMessage(data.id, scorePosition));
+          }
         } else {
           console.warn(`Player ${data.id} not found for update.`);
         }
@@ -102,8 +117,8 @@ function handleMessage(message, socket) {
 
       case 'create_bubble':
         data = decodeCreateBubbleData(message);
-        if (state.players[data.playerId]) {
-          broadcastToAllClients(encodeCreateBubbleMessage(data.playerId, data.bubbleId, data.position), data.playerId);
+        if (state.players[data.pId]) {
+          broadcastToAllClients(encodeCreateBubbleMessage(data.pId, data.bId, data.pos));
         } else {
           console.warn(`Player ${data.playerId} not found for update.`);
         }
@@ -111,8 +126,8 @@ function handleMessage(message, socket) {
         
       case 'ride_bubble':
         data = decodeRideBubbleData(message);
-        if (state.players[data.playerId]) {
-          broadcastToAllClients(encodeRideBubbleMessage(data.playerId, data.bubbleId), data.playerId);
+        if (state.players[data.pId]) {
+          broadcastToAllClients(encodeRideBubbleMessage(data.pId, data.bId));
         } else {
           console.warn(`Player ${data.playerId} not found for update.`);
         }
@@ -146,6 +161,7 @@ function handleClose(code, reason, connection) {
     connections.splice(index, 1);
   }
 
+  console.log('new player count ' + Object.values(state.playerSockets).length);
   broadcastToAllClients(encodeSyncMessage(state.players), leftId);
 }
 

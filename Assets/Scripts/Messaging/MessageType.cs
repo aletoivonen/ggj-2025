@@ -5,6 +5,7 @@ public enum MessageType
     Move = 3,
     Update = 4,
     CreateBubble = 5,
-    RideBubble = 6
+    RideBubble = 6,
+    UpdateScore = 7
 }
 
