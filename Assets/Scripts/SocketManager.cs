@@ -278,9 +278,9 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void SendPlayerProfile()
     {
         Color color = Color.white;
-        color.r = Random.Range(0, 2);
-        color.g = Random.Range(0, 2);
-        color.b = Random.Range(0, 2);
+        color.r = Random.Range(0.5f, 1);
+        color.g = Random.Range(0.5f, 1);
+        color.b = Random.Range(0.5f, 1);
 
         SocketPlayer.LocalPlayer.GetComponent<SpriteRenderer>().color = color;
 

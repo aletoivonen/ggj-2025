@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,7 +8,7 @@ namespace Zubble.Mobile
     {
         [SerializeField] private string _axisName;
         [SerializeField] private float _axisValue;
-
+        
         public void OnPointerDown(PointerEventData eventData)
         {
             MultiInput.Instance.SetAxis(_axisName, _axisValue);

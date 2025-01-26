@@ -205,8 +205,7 @@ namespace Zubble
             }
 
             // Use soap
-            float vertical = MultiInput.Instance.GetAxis("Vertical");
-            if (_previousVerticalInput == 0f && vertical > 0)
+            if (MultiInput.Instance.GetButtonDown("Soap") && !InBubble)
             {
                 RideBubble(_bubbleDuration);
             }
@@ -242,8 +241,6 @@ namespace Zubble
                 _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _jumpForce * 1.5f);
                 _isSpring = false;
             }
-
-            _previousVerticalInput = vertical;
         }
 
         private void FallDown()

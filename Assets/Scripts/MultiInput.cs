@@ -16,7 +16,8 @@ namespace Zubble
 
         private readonly Dictionary<string, bool> _mobileButtonsDown = new()
         {
-            { "Jump", false }
+            { "Jump", false },
+            { "Soap", false }
         };
 
         public MultiInput()
