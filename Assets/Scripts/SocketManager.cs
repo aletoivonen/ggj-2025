@@ -388,6 +388,8 @@ public class SocketManager : MonoSingleton<SocketManager>
             _spawnedPlayers.Remove(player.PlayerId);
             Destroy(player.gameObject);
         }
+
+        SendPlayerProfile();
     }
 
     private JObject GetBaseMessage()
