@@ -15,6 +15,8 @@ function decodeMessageType(buffer, offset) {
             return "create_bubble";
         case 6:
             return "ride_bubble";
+        case 7:
+            return "update_scores";
     }
 }
 
@@ -79,9 +81,9 @@ function decodeCreateBubbleData(buffer) {
 
     // Return the decoded data in a structured format
     return {
-        playerId: playerId,
-        bubbleId: bubbleId,
-        position: position
+        pId: playerId,
+        bId: bubbleId,
+        pos: position
     };
 }
 
@@ -94,8 +96,8 @@ function decodeRideBubbleData(buffer) {
 
     // Return the decoded data in a structured format
     return {
-        playeId: playerId,
-        bubbleId: bubbleId
+        pId: playerId,
+        bId: bubbleId
     };
 }
 

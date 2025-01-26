@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class Decoder
 {
-    private static PlayerData[] DecodePlayers(byte[] bytes, int offset)
+    private static PlayerData[] DecodePlayers(byte[] bytes, int offset, out int count)
     {
         uint playerCount = BitConverter.ToUInt32(bytes, offset);
         PlayerData[] players = new PlayerData[playerCount];
@@ -16,8 +16,25 @@ public static class Decoder
                 Position = new Vector2(BitConverter.ToSingle(bytes, offset + 11 + i * 15), BitConverter.ToSingle(bytes, offset + 15 + i * 15))
             };
         }
-        
+     
+        count = 4 + 15 * players.Length;
         return players;
+    }
+    
+    private static PlayerScoreData[] DecodePlayerScores(byte[] bytes, int offset)
+    {
+        uint playerCount = BitConverter.ToUInt32(bytes, offset);
+        PlayerScoreData[] scores = new PlayerScoreData[playerCount];
+        for (int i = 0; i < scores.Length; i++)
+        {
+            scores[i] = new PlayerScoreData
+            {
+                PlayerId = BitConverter.ToUInt32(bytes, offset + 4 + i * 8),
+                Score = BitConverter.ToUInt32(bytes, offset + 8 + i * 8),
+            };
+        }
+        
+        return scores;
     }
     
     private static Color DecodeColor(byte[] bytes, int offset)
@@ -40,7 +57,8 @@ public static class Decoder
         return new PlayerInitData
         {
             PlayerId = BitConverter.ToUInt32(bytes, 1),
-            Players = DecodePlayers(bytes, 5)
+            Players = DecodePlayers(bytes, 5, out int playerByteCount),
+            Scores = DecodePlayerScores(bytes, 5 + playerByteCount)
         };
     }
     
@@ -80,10 +98,18 @@ public static class Decoder
     
     public static PlayerSyncData DecodePlayerSyncData(byte[] bytes)
     {
-        Debug.Log("sync data " + bytes.Length);
         return new PlayerSyncData()
         {
-            Players = DecodePlayers(bytes, 1)
+            Players = DecodePlayers(bytes, 1, out _)
+        };
+    }
+    
+    public static PlayerScoreData DecodePlayerScoreData(byte[] bytes)
+    {
+        return new PlayerScoreData()
+        {
+            PlayerId = BitConverter.ToUInt32(bytes, 1),
+            Score = BitConverter.ToUInt32(bytes, 5)
         };
     }
 }
