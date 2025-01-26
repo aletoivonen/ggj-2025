@@ -13,6 +13,8 @@ using Random = UnityEngine.Random;
 
 public class SocketManager : MonoSingleton<SocketManager>
 {
+    public static Action<uint> OnHighScoreUpdate;
+    
     public int PlayerID { get; private set; } = -1;
 
     [SerializeField] private bool _useEditorAddress;
@@ -24,6 +26,7 @@ public class SocketManager : MonoSingleton<SocketManager>
     [SerializeField] private float _syncInterval = 0.3f;
     private float _timeSinceLastSync = 0.0f;
     private List<SocketPlayer> _tmpPlayers = new List<SocketPlayer>();
+    private uint _currentHighScore;
 
     [SerializeField] private SocketPlayer _playerPrefab;
 
@@ -187,6 +190,12 @@ public class SocketManager : MonoSingleton<SocketManager>
     {
         PlayerScoreData data = Decoder.DecodePlayerScoreData(bytes);
         Debug.Log("High score " + data.PlayerId + " " + data.Score);
+
+        if (data.Score > _currentHighScore)
+        {
+            _currentHighScore = data.Score;
+            OnHighScoreUpdate?.Invoke(_currentHighScore);
+        }
     }
 
     private void HandlePlayerRideBubble(byte[] bytes)
@@ -260,6 +269,13 @@ public class SocketManager : MonoSingleton<SocketManager>
     private void HandlePlayerInit(byte[] bytes)
     {
         PlayerInitData data = Decoder.DecodePlayerInitData(bytes);
+        PlayerScoreData highscore = data.Scores.OrderByDescending(x => x.Score).FirstOrDefault();
+        if (highscore != null)
+        {
+            _currentHighScore = highscore.Score;
+            OnHighScoreUpdate?.Invoke(_currentHighScore);
+        }
+        
         PlayerID = (int)data.PlayerId;
         SocketPlayer.LocalPlayer.PlayerId = PlayerID;
         CheckSpawnedPlayers(data.Players);
