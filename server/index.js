@@ -108,7 +108,7 @@ function handleMessage(message, socket) {
           if (scorePosition > state.scores[data.id].score) {
             scorePosition < 0 ? 0 : scorePosition;;
             state.scores[data.id].score = scorePosition;
-            //broadcastToAllClients(encodeUpdateScoreMessage(data.id, scorePosition));
+            broadcastToAllClients(encodeUpdateScoreMessage(data.id, scorePosition));
           }
         } else {
           console.warn(`Player ${data.id} not found for update.`);

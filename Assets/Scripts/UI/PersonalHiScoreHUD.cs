@@ -23,7 +23,7 @@ namespace Zubble.UI
             {
                 return;
             }
-            _textMeshProUGUI.text = $"Score: {highScore:F2}";
+            _textMeshProUGUI.text = $"Personal best: {highScore:F2}";
             _previousScore = highScore;
         }
     }
